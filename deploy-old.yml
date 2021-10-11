@@ -1,0 +1,60 @@
+version: v1
+kind: kubernetes
+application: potato-facts
+# Map of Deployment Targets, this is set up in a way where 
+# we can do multi-target deployments (multi-region or multi-cluster)
+account: saClusterViaHelm
+# Optionally override the namespaces that are in the manifests
+namespace: borealis
+# This is the key to a strategy under the strategies map
+strategy: strategy1
+
+# The list of manifests sources
+manifests:
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - inline:
+      value: |
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: hostname
+          namespace: borealis
+        spec:
+          revisionHistoryLimit: 1
+          replicas: 10
+          selector:
+            matchLabels:
+              app: hostname
+          template:
+            metadata:
+              labels:
+                app: hostname
+            spec:
+              containers:
+              - image: rstarmer/hostname:v2
+                imagePullPolicy: Always
+                name: hostname
+                resources: {}
+              restartPolicy: Always
+# The map of strategies, a deployment target will reference one of these
+canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setweight:
+              weight: 10
+          - pause:
+              untilapproved: true
+          - setweight:
+              weight: 30
+          #- pause:
+          #    duration: 5
+          #    unit: SECONDS
+          #- setweight:
+          #    weight: 60
+          - pause:
+              untilapproved: true
+
+
+
+#armory-old deploy start -f deploy-old.yml

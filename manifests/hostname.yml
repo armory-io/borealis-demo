@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostname
+  namespace: borealis
+spec:
+  revisionHistoryLimit: 1
+  replicas: 10
+  selector:
+    matchLabels:
+      app: hostname
+  template:
+    metadata:
+      labels:
+        app: hostname
+    spec:
+      containers:
+      - image: rstarmer/hostname:v3
+        imagePullPolicy: Always
+        name: hostname
+        resources: {}
+      restartPolicy: Always
+
+#demo script
+#Get second tab running: kubectl argo rollouts get rollout hostname -n all-hands-test -w
+#
+#start a deployment:
+#armory deploy start -a saK8sCluster --app all-hands-test -n all-hands-test -s canary --canary-step ratio{10} --canary-step pause --canary-step ratio{50} --canary-step pause ~/hostname.yml
+#
+#show it has paused for manual approval:
+#armory deploy status <cb6179b7-b0ce-4875-9ba4-a9b0092828dc>
+#
+#show it has deployed 1/10 nodes (tab 2).
+#
+#abort the deployment:
+#armory deploy abort ead0962d-192b-4c5a-9e10-c9a7dbe3b3d2
+#
+#show it rolled back (tab 2)
+#
+#restart the deployment
+#armory deploy restart <ae6f5f7f-fba4-4144-bdae-3bcccb01cd70>
+#
+#show it has deployed 1/10 nodes (tab2):
+#
+#resume deployment:
+#armory deploy resume <ae6f5f7f-fba4-4144-bdae-3bcccb01cd70>
+#
+#show it has deployed  5/10 nodes (second tab running):
+#
+#resume deployment:
+#armory deploy resume <ae6f5f7f-fba4-4144-bdae-3bcccb01cd70>
+#
+#show it has deployed  all nodes (second tab running):
+
+
+
+
+
+
+
+
+
+
+
+
+
