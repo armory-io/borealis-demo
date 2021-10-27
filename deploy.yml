@@ -16,7 +16,7 @@ targets:
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
-  - path: manifests/hostname.yml
+  - path: /manifests/hostname.yml
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
