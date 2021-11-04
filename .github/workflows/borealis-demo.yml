@@ -1,0 +1,21 @@
+name: Deploy my latest version
+
+on: 
+  push: # What triggers a deployment. For example, `push`.
+    branches:
+      - main # What branch triggers a deployment. For example, `main`.   
+
+jobs:
+  build:
+    name: deploy from main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deployment
+        uses: armory/cli-deploy-action@main
+        with:
+          clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
+          clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
