@@ -3,9 +3,17 @@ kind: Deployment
 metadata:
   name: hostname
   namespace: borealis
+  annotations: 
+    "app": "myapp"
+    "prometheus.io/scrape": "true"
 spec:
   revisionHistoryLimit: 1
   replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: hostname
@@ -13,9 +21,12 @@ spec:
     metadata:
       labels:
         app: hostname
+      annotations: 
+        "app": "myapp"
+        "prometheus.io/scrape": "true"
     spec:
       containers:
-      - image: rstarmer/hostname:v3
+      - image: rstarmer/hostname:v2
         imagePullPolicy: Always
         name: hostname
         resources: {}

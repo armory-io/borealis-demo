@@ -1,18 +1,50 @@
 version: v1
 kind: kubernetes
-application: potato-facts
+application: potato-facts2
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
 targets:
   # This in the name of a deployment, underneath it are its configuration
-  dev-west:
+  dev:
     # the name of an agent configured account
-    account: saClusterViaHelm
+    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-dev
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+  staging:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-staging
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      dependsOn: ["dev"]
+      beforeDeployment: []
+  infosec:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-infosec
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    constraints:
+      dependsOn: ["dev"]
+      beforeDeployment: []
+  prod-west:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis
     # This is the key to a strategy under the strategies map
-    strategy: strategy1
-    # This is a list of manifest names that should be included in this deployment
+    strategy: mycanary
+    constraints:
+      dependsOn: ["infosec","staging"]
+      beforeDeployment:
+      - pause:
+          untilApproved: true
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
@@ -20,7 +52,7 @@ manifests:
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
-  strategy1:
+  mycanary:
     # This map key, is the deployment strategy type
     canary: 
         # List of canary steps
@@ -34,6 +66,11 @@ strategies:
               weight: 50
           - pause:
               untilApproved: true
+  rolling:
+    canary:
+      steps: 
+      - setWeight:
+        weight: 100
 
 
 # armory deploy start -f deploy.yml
