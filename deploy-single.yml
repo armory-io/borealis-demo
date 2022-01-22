@@ -1,0 +1,47 @@
+version: v1
+kind: kubernetes
+application: potato-facts2
+# Map of Deployment Targets, this is set up in a way where 
+# we can do multi-target deployments (multi-region or multi-cluster)
+targets:
+  # This in the name of a deployment, underneath it are its configuration
+  dev-west:
+    # the name of an agent configured account
+    account: saClusterViaHelm #sa-eks-direct #stephen-wormhole #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis
+    # This is the key to a strategy under the strategies map
+    strategy: strategy1
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      beforeDeployment:
+      - pause:
+          untilApproved: true
+# The list of manifests sources
+manifests:
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - path: manifests/hostname.yml
+# The map of strategies, a deployment target will reference one of these
+strategies:
+  # this is the name for the strategy
+  strategy1:
+    # This map key, is the deployment strategy type
+    canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setWeight:
+              weight: 10
+          - pause:
+              untilApproved: true
+          - setWeight:
+              weight: 50
+          - pause:
+              untilApproved: true
+
+
+# armory deploy start -f deploy.yml
+
+
+
+#PROMQL:  container_cpu_load_average_10s{kubernetes_namespace="borealis",job="kubernetes-cadvisor"} * on (pod)  group_left (app) sum (up{job="kubernetes-pods",app="hostname",kubernetes_namespace="borealis"}) by (app,pod)
