@@ -60,17 +60,47 @@ strategies:
           # The map key is the step type
           - setWeight:
               weight: 10
-          - pause:
-              untilApproved: true
+          - analysis:
+              interval: 30
+              units: seconds
+              numberOfJudgmentRuns: 3
+              queries:
+              - avgCPUUsage-pass
+          #- pause:
+          #    untilApproved: true
           - setWeight:
               weight: 50
-          - pause:
-              untilApproved: true
+          - analysis:
+              interval: 30
+              units: seconds
+              numberOfJudgmentRuns: 3
+              queries:
+              - avgCPUUsage-fail
   rolling:
     canary:
       steps: 
       - setWeight:
-        weight: 100
+          weight: 100
+analysis:
+  defaultAccount: Stephen-Prometheus
+  defaultType: prometheus
+  queries:
+    - name: avgCPUUsage-pass
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{namespace="borealis",
+        job="kubelet"}[600000ms]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis"})
+        by (annotation_app, pod)) by (annotation_app)
+    - name: avgCPUUsage-fail
+      upperLimit: 3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{namespace="borealis",
+        job="kubelet"}[600000ms]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis"})
+        by (annotation_app, pod)) by (annotation_app)
 
 
 # armory deploy start -f deploy.yml

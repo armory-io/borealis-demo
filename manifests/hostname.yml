@@ -4,7 +4,7 @@ metadata:
   name: hostname
   namespace: borealis
   annotations: 
-    "app": "myapp"
+    "app": "hostname"
     "prometheus.io/scrape": "true"
 spec:
   revisionHistoryLimit: 1
@@ -22,14 +22,15 @@ spec:
       labels:
         app: hostname
       annotations: 
-        "app": "myapp"
+        "app": "hostname"
         "prometheus.io/scrape": "true"
     spec:
       containers:
-      - image: rstarmer/hostname:v2
+      - image: rstarmer/hostname:v1
         imagePullPolicy: Always
         name: hostname
         resources: {}
+        command: ["/bin/sh", "-c", "cat /dev/zero > /dev/null"]
       restartPolicy: Always
 
 #demo script
