@@ -75,7 +75,7 @@ strategies:
               units: seconds
               numberOfJudgmentRuns: 3
               queries:
-              - avgCPUUsage-fail
+              - avgCPUUsage-pass
   rolling:
     canary:
       steps: 
@@ -91,8 +91,18 @@ analysis:
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{namespace="borealis",
         job="kubelet"}[600000ms]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis"})
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
         by (annotation_app, pod)) by (annotation_app)
+      #,annotation_deploy_armory_io_replica_set_name="${canaryReplicaSetName}"})
+      #${ARMORY_REPLICA_SET_NAME}
+      #,annotation_deploy_armory_io_replica_set_name="${ARMORY_REPLICA_SET_NAME}"
+      #${replicaSetName}
+      #${applicationName}
+    - name: invalidQuery
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(c
     - name: avgCPUUsage-fail
       upperLimit: 3
       lowerLimit: 0
