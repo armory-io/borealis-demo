@@ -29,7 +29,7 @@ helm upgrade --install armory-rna-dev armory/remote-network-agent \
     --set agentIdentifier=demo-dev-cluster \
     -n borealis-demo-agent-dev
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]
+helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s
 
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 

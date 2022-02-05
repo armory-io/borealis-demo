@@ -37,7 +37,7 @@ targets:
     # the name of an agent configured account
     account: demo-prod-west-cluster
     # Optionally override the namespaces that are in the manifests
-    namespace: borealis
+    namespace: borealis-prod
     # This is the key to a strategy under the strategies map
     strategy: mycanary
     constraints:
@@ -48,7 +48,9 @@ targets:
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
-  - path: manifests/hostname.yml
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
+    targets: [prod-west]
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -61,9 +63,11 @@ strategies:
           - setWeight:
               weight: 10
           - analysis:
-              interval: 30
+              interval: 5
               units: seconds
               numberOfJudgmentRuns: 3
+              rollBackMode: manual
+              rollForwardMode: automatic
               queries:
               - avgCPUUsage-pass
           #- pause:
@@ -71,11 +75,16 @@ strategies:
           - setWeight:
               weight: 50
           - analysis:
-              interval: 30
+              interval: 5
               units: seconds
               numberOfJudgmentRuns: 3
-              queries:
+              rollBackMode: manual
+              rollForwardMode: manual
+              queries: 
+              - avgCPUUsage-fail
               - avgCPUUsage-pass
+          - setWeight:
+              weight: 100
   rolling:
     canary:
       steps: 
@@ -89,27 +98,26 @@ analysis:
       upperLimit: 10000 #3
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{namespace="borealis",
-        job="kubelet"}[600000ms]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[60000ms]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
         by (annotation_app, pod)) by (annotation_app)
       #,annotation_deploy_armory_io_replica_set_name="${canaryReplicaSetName}"})
       #${ARMORY_REPLICA_SET_NAME}
       #,annotation_deploy_armory_io_replica_set_name="${ARMORY_REPLICA_SET_NAME}"
       #${replicaSetName}
       #${applicationName}
+      # note the time should actually be set to ${promQlStepInterval}
     - name: invalidQuery
       upperLimit: 10000 #3
       lowerLimit: 0
       queryTemplate: >-
         avg (avg_over_time(c
     - name: avgCPUUsage-fail
-      upperLimit: 3
+      upperLimit: 1
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{namespace="borealis",
-        job="kubelet"}[600000ms]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_app="hostname",namespace="borealis"})
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[60000ms]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
         by (annotation_app, pod)) by (annotation_app)
 
 
