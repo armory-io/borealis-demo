@@ -33,6 +33,10 @@ spec:
         resources:
           limits:
             cpu: "100m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+            memory: "70Mi"
+          requests:
+            cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+            memory: "70Mi"
         env:
         - name: NEW_RELIC_AGENT_ENBALED
           value: 'false'
