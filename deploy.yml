@@ -63,9 +63,9 @@ strategies:
           - setWeight:
               weight: 10
           - analysis:
-              interval: 5
+              interval: 7
               units: seconds
-              numberOfJudgmentRuns: 3
+              numberOfJudgmentRuns: 1
               rollBackMode: manual
               rollForwardMode: automatic
               queries:
@@ -98,7 +98,7 @@ analysis:
       upperLimit: 10000 #3
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[60000ms]) * on (pod)  group_left (annotation_app)
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[${promQlStepInterval}]) * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
         by (annotation_app, pod)) by (annotation_app)
       #,annotation_deploy_armory_io_replica_set_name="${canaryReplicaSetName}"})
@@ -116,7 +116,7 @@ analysis:
       upperLimit: 1
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[60000ms]) * on (pod)  group_left (annotation_app)
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[${promQlStepInterval}]) * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="${replicaSetName}"})
         by (annotation_app, pod)) by (annotation_app)
 

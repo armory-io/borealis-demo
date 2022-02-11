@@ -4,6 +4,10 @@ kubectl create namespace borealis-demo-agent-prod
 kubectl create namespace borealis-demo-agent-staging
 kubectl create namespace borealis-demo-agent-dev
 kubectl create ns borealis-demo-infra
+kubectl create ns borealis-dev
+kubectl create ns borealis-staging
+kubectl create ns borealis-infosec
+kubectl create ns borealis-prod
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
@@ -29,7 +33,7 @@ helm upgrade --install armory-rna-dev armory/remote-network-agent \
     --set agentIdentifier=demo-dev-cluster \
     -n borealis-demo-agent-dev
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s
+helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
 
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 
