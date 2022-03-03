@@ -8,9 +8,13 @@ kubectl create ns borealis-dev
 kubectl create ns borealis-staging
 kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
+kubectl create ns borealis-prod-eu
+kubectl create ns borealis-demo-agent-prod-eu
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
+kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
+
 # Optionally Add Armory Chart repo, if you haven't
 helm repo add armory https://armory.jfrog.io/artifactory/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -32,6 +36,11 @@ helm upgrade --install armory-rna-dev armory/remote-network-agent \
     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
     --set agentIdentifier=demo-dev-cluster \
     -n borealis-demo-agent-dev
+helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
+    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
+    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
+    --set agentIdentifier=demo-prod-west-cluster \
+    -n borealis-demo-agent-prod-eu
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
 helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
 
