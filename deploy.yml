@@ -1,6 +1,6 @@
 version: v1
 kind: kubernetes
-application: potato-facts2
+application: potato-facts3
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
 targets:
@@ -87,7 +87,7 @@ strategies:
           - setWeight:
               weight: 50
           - analysis:
-              interval: 5
+              interval: 7
               units: seconds
               numberOfJudgmentRuns: 3
               rollBackMode: manual
@@ -119,8 +119,7 @@ strategies:
             untilApproved: true
 
 analysis:
-  defaultAccount: Stephen-Prometheus
-  defaultType: prometheus
+  defaultMetricProviderName: Stephen-Prometheus
   queries:
     - name: avgCPUUsage-pass
       upperLimit: 10000 #3
