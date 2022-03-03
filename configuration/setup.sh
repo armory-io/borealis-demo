@@ -44,7 +44,9 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
 helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
 
-kubectl apply -f ../manifests/potato-facts-external-service.yml -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+BASEDIR=$(dirname $0)
+
+kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 
 # also tried: --set kube-state-metrics.metricLabelsAllowlist=pods=[*]
