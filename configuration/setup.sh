@@ -39,7 +39,7 @@ helm upgrade --install armory-rna-dev armory/remote-network-agent \
 helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-prod-west-cluster \
+    --set agentIdentifier=demo-prod-eu-cluster \
     -n borealis-demo-agent-prod-eu
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
 helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"

@@ -47,7 +47,7 @@ targets:
           untilApproved: true
   prod-eu:
     # the name of an agent configured account
-    account: demo-prod-west-cluster
+    account: demo-prod-eu-cluster
     # Optionally override the namespaces that are in the manifests
     namespace: borealis-prod-eu
     # This is the key to a strategy under the strategies map
