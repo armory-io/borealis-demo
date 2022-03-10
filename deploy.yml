@@ -114,7 +114,7 @@ strategies:
             rollForwardMode: automatic
             queries:
               - avgCPUUsage-pass
-      shutdownOldVersionAfter:
+      shutDownOldVersionAfter:
         - pause:
             untilApproved: true
 
