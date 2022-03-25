@@ -13,10 +13,10 @@ jobs:
         id: getToken
         uses: fjogeleit/http-request-action@master
         with:
-          url: "https://auth.staging.cloud.armory.io/oauth/token"
+          url: "https://auth.cloud.armory.io/oauth/token"
           method: "POST"
           customHeaders: '{ "Content-Type": "application/x-www-form-urlencoded" }'
-          data: 'audience=https://api.staging.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.ARMORY_STAGING_CLIENT_ID }}&client_secret=${{ secrets.ARMORY_STAGING_CLIENT_SECRET }}'
+          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.BOREALIS_CREDENTIAL_ID }}&client_secret=${{ secrets.BOREALIS_CREDENTIAL_SECRET }}'
       - name: callCallback
         id: callCallback
         uses: fjogeleit/http-request-action@master
