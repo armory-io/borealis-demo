@@ -31,16 +31,28 @@ spec:
         name: potato-facts
         resources:
           limits:
-            cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
-            memory: "70Mi"
+            cpu: "40m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+            memory: "150Mi"
           requests:
-            cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
-            memory: "70Mi"
+            cpu: "40m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+            memory: "150Mi"
+
         env:
         - name: NEW_RELIC_AGENT_ENBALED
           value: 'false'
-        #ports:
-        #  - containerPort: 8086
+        - name: DEFAULT_JVM_OPTS
+          value: -Xmx20m
+        - name: APPLICATION_NAME
+          value: potato-facts
+        - name: APPLICATION_ENVIRONMENT
+          value: prod
+        ports:
+          - containerPort: 8086
+            name: liveness-port
+        #startupProbe:
+        #  httpGet:
+        #    path: /
+        #    port: liveness-port
       restartPolicy: Always
 
 
