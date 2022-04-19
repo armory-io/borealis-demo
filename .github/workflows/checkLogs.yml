@@ -1,0 +1,30 @@
+name: Webhook Callback
+
+on:
+  repository_dispatch:
+    types: checkLogs
+
+jobs:
+  respond:
+    name: Calls the callback being passed in
+    runs-on: ubuntu-18.04
+    steps:
+      - name: getToken
+        id: getToken
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://auth.cloud.armory.io/oauth/token"
+          method: "POST"
+          customHeaders: '{ "Content-Type": "application/x-www-form-urlencoded" }'
+          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.BOREALIS_CREDENTIAL_ID }}&client_secret=${{ secrets.BOREALIS_CREDENTIAL_SECRET }}'
+      - name: callCallback
+        id: callCallback
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ github.event.client_payload.callbackUri }}
+          method: 'POST'
+          bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
+          customHeaders: '{ "Content-Type": "application/json" }'
+          data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
+      - name: show http response
+        run: echo ${{ steps.callCallback.outputs.response }}
