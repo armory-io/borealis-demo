@@ -20,4 +20,4 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: "jq '[.controllers[].target.cpuCores]|max -r'"
+          cmd: "jq '[.controllers[].target.cpuCores]|max' -r"
