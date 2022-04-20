@@ -1,8 +1,8 @@
 name: Rightsize my deployment my latest version
 
-on: 
-  repository_dispatch:
-    types: resize
+on: workflow_dispatch
+  #repository_dispatch:
+  #  types: resize
 jobs:
   rightSize:
     name: Calls the callback being passed in
