@@ -23,11 +23,11 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: "echo \"${{ steps.getReqs.outputs.value }}\" | jq '[.controllers[].target.cpuCores]|max' -r"
+          cmd: "echo \"${{ steps.getReqs.outputs.response }}\" | jq '[.controllers[].target.cpuCores]|max' -r"
       - name: extract RAM sizing
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
-          cmd: "echo \"${{ steps.getReqs.outputs.value }}\" | jq '[.controllers[].target.ramBytes]|max' -r"
+          cmd: "echo \"${{ steps.getReqs.outputs.response }}\" | jq '[.controllers[].target.ramBytes]|max' -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
