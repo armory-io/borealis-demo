@@ -20,12 +20,12 @@ jobs:
       - name: Show mresponse
         run: 'echo "${{ steps.getReqs.outputs.response }}"'
       - name: write to file
-        run: 'echo "${{ steps.getReqs.outputs.response }}" > kubeCost.json'
+        run: 'echo "${{ steps.getReqs.outputs.response }}" > /kubeCost.json'
       - name: extract CPU sizing
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: "jq '[.controllers[].target.cpuCores]|max' kubeCost.json -r"
+          cmd: "jq '[.controllers[].target.cpuCores]|max' /kubeCost.json -r"
       - name: extract RAM sizing
         uses: sergeysova/jq-action@v2
         id: ramSizing
