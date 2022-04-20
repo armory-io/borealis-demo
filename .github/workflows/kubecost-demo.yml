@@ -1,9 +1,8 @@
 name: Rightsize my deployment my latest version
 
 on: 
-  push: # What triggers a deployment. For example, `push`.
-    branches:
-      - main # What branch triggers a deployment. For example, `main`.   
+  repository_dispatch:
+    types: resize
 jobs:
   rightSize:
     name: Calls the callback being passed in
@@ -21,4 +20,4 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: 'jq [.controllers[].target.cpuCores]|max -r'
+          cmd: "jq '[.controllers[].target.cpuCores]|max -r'"
