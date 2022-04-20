@@ -4,18 +4,21 @@ on:
   push: # What triggers a deployment. For example, `push`.
     branches:
       - main # What branch triggers a deployment. For example, `main`.   
-
 jobs:
-  build:
-    name: deploy from main
+  rightSize:
+    name: Calls the callback being passed in
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Deployment
-        uses: armory/cli-deploy-action@main
+      - name: getSizingApiResponse
+        id: getToken
+        uses: fjogeleit/http-request-action@master
         with:
-          clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
-          clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          url: "http://a6299b5747b7b4a698f4098a263ea0a7-1252398275.us-east-2.elb.amazonaws.com:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
+          method: "GET"
+      - name: extract CPU sizing
+        uses: sergeysova/jq-action@v2
+        id: cpuSizing
+        with:
+          cmd: 'jq [.controllers[].target.cpuCores]|max -r'
