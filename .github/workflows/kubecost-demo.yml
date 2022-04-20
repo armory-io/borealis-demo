@@ -18,7 +18,7 @@ jobs:
           method: "GET"
           
       - name: Show mresponse
-        run: 'echo "${{ steps.getReqs.outputs.value }}"'
+        run: 'echo "${{ steps.getReqs.outputs.response }}"'
       - name: extract CPU sizing
         uses: sergeysova/jq-action@v2
         id: cpuSizing
