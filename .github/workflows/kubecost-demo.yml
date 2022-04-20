@@ -11,20 +11,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: getSizingApiResponse
-        id: getToken
+        id: getReqs
         uses: fjogeleit/http-request-action@master
         with:
           url: "http://a6299b5747b7b4a698f4098a263ea0a7-1252398275.us-east-2.elb.amazonaws.com:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
           method: "GET"
+          
+      - name: Show mresponse
+        run: 'echo "${{ steps.getReqs.outputs.value }}"'
       - name: extract CPU sizing
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: "jq '[.controllers[].target.cpuCores]|max' -r"
+          cmd: "echo \"${{ steps.getReqs.outputs.value }}\" | jq '[.controllers[].target.cpuCores]|max' -r"
       - name: extract RAM sizing
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
-          cmd: "jq '[.controllers[].target.ramBytes]|max' -r"
+          cmd: "echo \"${{ steps.getReqs.outputs.value }}\" | jq '[.controllers[].target.ramBytes]|max' -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
