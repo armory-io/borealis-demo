@@ -14,7 +14,6 @@ targets:
     strategy: rolling
     # This is a list of manifest names that should be included in this deployment
     constraints:
-      dependsOn: ["dev"]
       afterDeployment:
         - runWebhook:
             name: Run_Integration_Tests
