@@ -28,3 +28,42 @@ jobs:
           cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.ramBytes]|max'  /kubeCost.json -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
+      - name: Update CPU Request
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.requests.cpu'
+          value: "${{ steps.cpuSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update CPU Limit
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.limits.cpu'
+          value: "${{ steps.cpuSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update RAM Request
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.requests.memory'
+          value: "${{ steps.ramSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update RAM Limit
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.limits.memory'
+          value: "${{ steps.ramSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true          
+      - name: Deployment
+        uses: armory/cli-deploy-action@main
+        with:
+          clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  
+          clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+
