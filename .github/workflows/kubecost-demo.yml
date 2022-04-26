@@ -29,6 +29,6 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
-          cmd: "${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].target.ramBytes]|max'  /kubeCost.json -r"
+          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].target.ramBytes]|max'  /kubeCost.json -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
