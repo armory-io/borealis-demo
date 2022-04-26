@@ -24,11 +24,11 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
-          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].target.cpuCores]|max' /kubeCost.json -r"
+          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.cpuCores]|max' /kubeCost.json -r"
       - name: extract RAM sizing
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
-          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].target.ramBytes]|max'  /kubeCost.json -r"
+          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.ramBytes]|max'  /kubeCost.json -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
