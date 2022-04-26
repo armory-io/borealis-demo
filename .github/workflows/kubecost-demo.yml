@@ -16,7 +16,6 @@ jobs:
         with:
           url: "http://a6299b5747b7b4a698f4098a263ea0a7-1252398275.us-east-2.elb.amazonaws.com:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
           method: "GET"
-          
       - name: Show mresponse
         run: 'echo "${{ steps.getReqs.outputs.response }}"'
       - name: write to file
@@ -30,6 +29,6 @@ jobs:
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
-          cmd: "echo \"${{ steps.getReqs.outputs.response }}\" | jq '[.controllers[].target.ramBytes]|max' -r"
+          cmd: "${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].target.ramBytes]|max'  /kubeCost.json -r"
       - name: Show my new requests
         run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
