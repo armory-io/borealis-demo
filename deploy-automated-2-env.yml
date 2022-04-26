@@ -25,7 +25,7 @@ targets:
     # This is the key to a strategy under the strategies map
     strategy: mycanary
     constraints:
-      dependsOn: ["infosec","staging"]
+      dependsOn: ["staging"]
   prod-eu:
     # the name of an agent configured account
     account: demo-prod-eu-cluster
@@ -34,7 +34,7 @@ targets:
     # This is the key to a strategy under the strategies map
     strategy: mycanary
     constraints:
-      dependsOn: [ "infosec","staging" ]
+      dependsOn: [ "staging" ]
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
