@@ -26,8 +26,8 @@ jobs:
         id: ramSizing
         with:
           cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.ramBytes]|max'  /kubeCost.json -r"
-      - name: Show my new requests
-        run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
+      #- name: Show my new requests
+      #  run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
       - name: Update CPU Request
         uses: fjogeleit/yaml-update-action@main
         with:
