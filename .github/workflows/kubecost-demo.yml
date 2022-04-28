@@ -14,7 +14,7 @@ jobs:
         id: getReqs
         uses: fjogeleit/http-request-action@master
         with:
-          url: "http://a6299b5747b7b4a698f4098a263ea0a7-1252398275.us-east-2.elb.amazonaws.com:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
+          url: "http://${{ secrets.KUBECOST_HOST }}:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
           method: "GET"
       - name: Extract CPU Sizing
         uses: sergeysova/jq-action@v2
