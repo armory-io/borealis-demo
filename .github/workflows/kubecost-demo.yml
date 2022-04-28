@@ -5,7 +5,7 @@ on: workflow_dispatch
   #  types: resize
 jobs:
   rightSize:
-    name: Calls the callback being passed in
+    name: RightSize my deployment based of KubeCost Reccomendations.
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,12 +16,12 @@ jobs:
         with:
           url: "http://a6299b5747b7b4a698f4098a263ea0a7-1252398275.us-east-2.elb.amazonaws.com:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
           method: "GET"
-      - name: extract CPU sizing
+      - name: Extract CPU Sizing
         uses: sergeysova/jq-action@v2
         id: cpuSizing
         with:
           cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.cpuCores]|max' /kubeCost.json -r"
-      - name: extract RAM sizing
+      - name: Extract RAM Sizing
         uses: sergeysova/jq-action@v2
         id: ramSizing
         with:
