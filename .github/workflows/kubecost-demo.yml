@@ -60,7 +60,7 @@ jobs:
           value: "${{ steps.ramSizing.outputs.value }}"
           commitChange: false
           updateFile: true          
-      - name: Deployment
+      - name: Deploy Changes
         uses: armory/cli-deploy-action@main
         with:
           clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  
