@@ -92,7 +92,7 @@ analysis:
         avg((avg(avg_over_time( container_memory_working_set_bytes{job="kubelet"}[30s])) by (pod) / on (pod) 
         avg( avg_over_time(container_spec_memory_limit_bytes{}[30s]))  by (pod) )   * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"}) by (annotation_app, pod)) by (annotation_app)
- webhooks:
+webhooks:
   - name: Run_Integration_Tests
     method: POST
     uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
