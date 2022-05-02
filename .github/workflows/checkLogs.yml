@@ -2,7 +2,7 @@ name: Webhook Callback
 
 on:
   repository_dispatch:
-    types: webhookCallback
+    types: checkLogs
 
 jobs:
   respond:
@@ -25,6 +25,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Webhook was successful: ${{ github.event.client_payload.callbackUri }}" }'
+          data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}

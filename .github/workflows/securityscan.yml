@@ -2,7 +2,7 @@ name: Webhook Callback
 
 on:
   repository_dispatch:
-    types: webhookCallback
+    types: securityscan
 
 jobs:
   respond:
