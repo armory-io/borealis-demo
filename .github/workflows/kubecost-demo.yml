@@ -1,0 +1,69 @@
+name: Rightsize my deployment my latest version
+
+on: workflow_dispatch
+  #repository_dispatch:
+  #  types: resize
+jobs:
+  rightSize:
+    name: RightSize my deployment based of KubeCost Reccomendations.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Query KubeCost for Sizing Recommendation
+        id: getReqs
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "http://${{ secrets.KUBECOST_HOST }}:9090/model/savings/requestSizing?filterNamespaces=borealis-prod&filterContainer=potato-facts&algorithm=max-headroom"
+          method: "GET"
+      - name: Extract CPU Sizing
+        uses: sergeysova/jq-action@v2
+        id: cpuSizing
+        with:
+          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.cpuCores]|max' /kubeCost.json -r"
+      - name: Extract RAM Sizing
+        uses: sergeysova/jq-action@v2
+        id: ramSizing
+        with:
+          cmd: "echo '${{ steps.getReqs.outputs.response }}' > /kubeCost.json && jq '[.controllers[].containers.\"potato-facts\".target.ramBytes]|max'  /kubeCost.json -r"
+      #- name: Show my new requests
+      #  run: 'echo "new cpu request ${{ steps.cpuSizing.outputs.value }}, new memory request ${{ steps.ramSizing.outputs.value }}"'
+      - name: Update CPU Request
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.requests.cpu'
+          value: "${{ steps.cpuSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update CPU Limit
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.limits.cpu'
+          value: "${{ steps.cpuSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update RAM Request
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.requests.memory'
+          value: "${{ steps.ramSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true
+      - name: Update RAM Limit
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: '/manifests/potato-facts.yml'
+          propertyPath: 'spec.template.spec.containers[0].resources.limits.memory'
+          value: "${{ steps.ramSizing.outputs.value }}"
+          commitChange: false
+          updateFile: true          
+      - name: Deploy Changes
+        uses: armory/cli-deploy-action@main
+        with:
+          clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  
+          clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+
