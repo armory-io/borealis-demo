@@ -7,7 +7,6 @@ metadata:
   namespace: borealis-prod-eu
 
 spec:
-  externalTrafficPolicy: Cluster
   ports:
   - name: gate-tcp
     port: 80
@@ -15,7 +14,7 @@ spec:
     targetPort: 8000
   selector:
     app: potato-facts
-  type: NodePort #NodePort
+  type: ClusterIP #NodePort
 ---
 apiVersion: v1
 kind: Service
@@ -24,9 +23,7 @@ metadata:
     app: potato-facts
   name: potato-facts-preview
   namespace: borealis-prod-eu
-
 spec:
-  externalTrafficPolicy: Cluster
   ports:
   - name: gate-tcp
     port: 80
@@ -34,7 +31,7 @@ spec:
     targetPort: 8000
   selector:
     app: potato-facts-preview
-  type: NodePort
+  type: ClusterIP
 
 ---
 apiVersion: networking.k8s.io/v1
@@ -42,10 +39,31 @@ kind: Ingress
 metadata:
   name: ingress-wildcard-host
   namespace: borealis-prod-eu
+  annotations: 
+    nginx.org/mergeable-ingress-type: master
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/app-root: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
+  ingressClassName: nginx
   #tls:
   #- hosts:
   #    - a34d3aaf6283e4c36b7563ee321c9673-194964128.us-east-2.elb.amazonaws.com
+  rules:
+    - host: a34d3aaf6283e4c36b7563ee321c9673-194964128.us-east-2.elb.amazonaws.com
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-wildcard-host-paths
+  namespace: borealis-prod-eu
+  annotations: 
+    nginx.org/mergeable-ingress-type: minion
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/app-root: /
+spec:
+  ingressClassName: nginx
   rules:
     - host: a34d3aaf6283e4c36b7563ee321c9673-194964128.us-east-2.elb.amazonaws.com
       http:
@@ -64,7 +82,6 @@ spec:
                 name: potato-facts-external
                 port:
                   number: 80
-
 
 
 

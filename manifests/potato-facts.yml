@@ -26,7 +26,7 @@ spec:
         "prometheus.io/scrape": "true"
     spec:
       containers:
-      - image:  armory/potato-facts:v1.6.0 #v1.5.1 #v1.6.0 # v1.7.0
+      - image:  demoimages/bluegreen:v5 #v1.5.1 #v1.6.0 # v1.7.0
         imagePullPolicy: Always
         name: potato-facts
         command: ["/bin/sh", "-c", "sleep 10 && timeout 5m cat /dev/zero > /dev/null"]
@@ -37,19 +37,24 @@ spec:
           requests:
             cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
             memory: "150Mi"
-        env:
-        - name: NEW_RELIC_AGENT_ENBALED
-          value: 'false'
-        - name: DEFAULT_JVM_OPTS
-          value: -Xmx20m
-        - name: APPLICATION_NAME
-          value: potato-facts
-        - name: APPLICATION_ENVIRONMENT
-          value: prod
-        #ports:
-        #  - containerPort: 8086
+        #env:
+        #- name: NEW_RELIC_AGENT_ENBALED
+        #  value: 'false'
+        #- name: DEFAULT_JVM_OPTS
+        #  value: -Xmx20m
+        #- name: APPLICATION_NAME
+        #  value: potato-facts
+        #- name: APPLICATION_ENVIRONMENT
+        #  value: prod
+        ports:
+          - containerPort: 8000
       restartPolicy: Always
 
+#---
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#    name: borealis-dev-wip
 
 #---
 #apiVersion: v1

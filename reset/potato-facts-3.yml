@@ -26,28 +26,28 @@ spec:
         "prometheus.io/scrape": "true"
     spec:
       containers:
-      - image:  armory/potato-facts:v1.5.1 #v1.6.0 # v1.7.0
+      - image:  demoimages/bluegreen:v4 #v1.6.0 # v1.7.0
         imagePullPolicy: Always
         name: potato-facts
         resources:
           limits:
             cpu: "40m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
-            memory: "150Mi"
+            memory: "100Mi"
           requests:
             cpu: "40m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
-            memory: "150Mi"
+            memory: "100Mi"
 
-        env:
-        - name: NEW_RELIC_AGENT_ENBALED
-          value: 'false'
-        - name: DEFAULT_JVM_OPTS
-          value: -Xmx20m
-        - name: APPLICATION_NAME
-          value: potato-facts
-        - name: APPLICATION_ENVIRONMENT
-          value: prod
+        #env:
+        #- name: NEW_RELIC_AGENT_ENBALED
+        #  value: 'false'
+        #- name: DEFAULT_JVM_OPTS
+        #  value: -Xmx300m
+        #- name: APPLICATION_NAME
+        #  value: potato-facts
+        #- name: APPLICATION_ENVIRONMENT
+        #  value: prod
         ports:
-          - containerPort: 8086
+          - containerPort: 8000
             name: liveness-port
         #startupProbe:
         #  httpGet:
