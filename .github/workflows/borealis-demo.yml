@@ -20,4 +20,4 @@ jobs:
           clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           addContext: "environment=prod"
-          application: potato-facts4sa
+          applicationName: potato-facts4sa
