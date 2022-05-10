@@ -57,12 +57,24 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: /manifests/potato-facts.yml
   - path: /manifests/potato-facts-external-service.yml
-    targets: [prod-west, prod-eu]
+    targets: [prod-west, prod-eu, prod-east]
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -146,6 +158,11 @@ analysis:
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
         by (annotation_app, pod)) by (annotation_app)
+
+trafficManagement:
+  - targets: [prod-east]
+    smi:
+      - rootServiceName: potato-facts-external
 
 
 # armory deploy start -f deploy.yml
