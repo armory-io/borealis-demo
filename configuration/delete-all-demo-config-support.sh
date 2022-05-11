@@ -24,4 +24,5 @@ kubectl delete ns borealis-prod-eu
 kubectl delete ns borealis-prod-east
 
 echo "uninstalling LinkerD from cluster"
+export PATH=~/.linkerd2/bin:$PATH
 linkerd uninstall | kubectl delete -f -
