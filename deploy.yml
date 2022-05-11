@@ -72,8 +72,8 @@ targets:
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
-  - path: /manifests/potato-facts.yml
-  - path: /manifests/potato-facts-external-service.yml
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
 # The map of strategies, a deployment target will reference one of these
 strategies:
@@ -162,7 +162,7 @@ analysis:
 trafficManagement:
   - targets: [prod-east]
     smi:
-      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-facts-cluster-svc
 
 
 # armory deploy start -f deploy.yml

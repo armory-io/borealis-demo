@@ -24,12 +24,13 @@ spec:
       annotations: 
         "app": "potato-facts"
         "prometheus.io/scrape": "true"
+        linkerd.io/inject: enabled
     spec:
       containers:
       - image:  armory/potato-facts:v1.6.0 #v1.5.1 #v1.6.0 # v1.7.0
+#      - image:  demoimages/bluegreen:v3 #v5, v4, v3
         imagePullPolicy: Always
         name: potato-facts
-        command: ["/bin/sh", "-c", "sleep 10 && timeout 5m cat /dev/zero > /dev/null"]
         resources:
           limits:
             cpu: "100m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.

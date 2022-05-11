@@ -16,7 +16,24 @@ spec:
     app: potato-facts
   type: LoadBalancer
 
-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: potato-facts-cluster-svc
+  labels:
+    app: potato-facts-2
+  annotations:
+    linkerd.io/inject: enabled
+spec:
+  selector:
+    app: potato-facts-2
+  #    name: prth-test
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
 
 
 
