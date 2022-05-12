@@ -22,7 +22,9 @@ targets:
     # This is a list of manifest names that should be included in this deployment
     constraints:
       dependsOn: ["dev"]
-      beforeDeployment: []
+      afterDeployment:
+      - runWebhook:
+          name: Integration_Tests
   infosec:
     # the name of an agent configured account
     account: demo-staging-cluster
@@ -32,7 +34,9 @@ targets:
     strategy: rolling
     constraints:
       dependsOn: ["dev"]
-      beforeDeployment: []
+      afterDeployment:
+      - runWebhook:
+          name: Security_Scanners
   prod-west:
     # the name of an agent configured account
     account: demo-prod-west-cluster
@@ -94,6 +98,8 @@ strategies:
               rollForwardMode: automatic
               queries:
               - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
           #- pause:
           #    untilApproved: true
           - setWeight:
@@ -107,6 +113,8 @@ strategies:
               queries: 
               - avgCPUUsage-fail
               - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
           - setWeight:
               weight: 100
   rolling:
@@ -129,7 +137,15 @@ strategies:
       shutDownOldVersionAfter:
         - pause:
             untilApproved: true
-
+        - runWebhook:
+            name: Check_Logs
+        - analysis:
+            interval: 7
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            queries:
+              - avgCPUUsage-pass
 analysis:
   defaultMetricProviderName: Stephen-Prometheus
   queries:
@@ -164,5 +180,55 @@ trafficManagement:
     smi:
       - rootServiceName: potato-facts-cluster-svc
 
-
-# armory deploy start -f deploy.yml
+webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
+  - name: Check_Logs
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
