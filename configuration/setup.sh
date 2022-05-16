@@ -47,6 +47,21 @@ helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-d
 BASEDIR=$(dirname $0)
 
 kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+
+echo "Installing LinkerD service Mesh on cluster. if you run into errors - see docs at - https://linkerd.io/2.11/getting-started/"
+curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+echo "Adding Linked bin to PATH."
+export PATH=~/.linkerd2/bin:$PATH
+linkerd check --pre
+linkerd install | kubectl apply -f -
+
+echo "LinkerD installation complete, hopefully"
+echo "Creating new environment for traffic management deployment"
+
+kubectl create ns borealis-prod-east
+
+kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
+
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 
 # also tried: --set kube-state-metrics.metricLabelsAllowlist=pods=[*]
