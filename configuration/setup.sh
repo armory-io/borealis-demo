@@ -53,7 +53,7 @@ curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
 echo "Adding Linked bin to PATH."
 export PATH=~/.linkerd2/bin:$PATH
 linkerd check --pre
-linkerd install | kubectl apply -f -
+linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
 
 echo "LinkerD installation complete, hopefully"
 echo "Creating new environment for traffic management deployment"
