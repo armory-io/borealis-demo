@@ -63,7 +63,7 @@ jobs:
       - name: Deploy Changes
         uses: armory/cli-deploy-action@main
         with:
-          clientId: "${{ secrets.BOREALIS_CREDENTIAL_ID }}"  
-          clientSecret:  "${{ secrets.BOREALIS_CREDENTIAL_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  
+          clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
 
