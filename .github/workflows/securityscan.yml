@@ -16,7 +16,7 @@ jobs:
           url: "https://auth.cloud.armory.io/oauth/token"
           method: "POST"
           customHeaders: '{ "Content-Type": "application/x-www-form-urlencoded" }'
-          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.BOREALIS_CREDENTIAL_ID }}&client_secret=${{ secrets.BOREALIS_CREDENTIAL_SECRET }}'
+          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.CDAAS_CLIENT_ID }}&client_secret=${{ secrets.CDAAS_CLIENT_SECRET }}'
       - name: callCallback
         id: callCallback
         uses: fjogeleit/http-request-action@master
