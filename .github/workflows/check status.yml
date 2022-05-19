@@ -1,4 +1,4 @@
-name: Rightsize my deployment my latest version
+name: check status
 
 on: workflow_dispatch
 jobs:
