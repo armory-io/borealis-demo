@@ -42,7 +42,7 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
     --set agentIdentifier=demo-prod-eu-cluster \
     -n borealis-demo-agent-prod-eu
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
+helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"  --version 30.2.0
 
 BASEDIR=$(dirname $0)
 
