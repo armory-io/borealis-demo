@@ -79,6 +79,8 @@ manifests:
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+    targets: [dev, staging, infosec, prod-west, prod-eu]
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -124,7 +126,7 @@ strategies:
           weight: 100
   myBlueGreen:
     blueGreen:
-      activeService: potato-facts-external
+#      activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
             interval: 7
@@ -176,6 +178,10 @@ analysis:
         by (annotation_app, pod)) by (annotation_app)
 
 trafficManagement:
+  - targets: [prod-eu]
+    kubernetes:
+      - activeService: potato-facts-external
+      - activeService: potato-lies-external
   - targets: [prod-east]
     smi:
       - rootServiceName: potato-facts-cluster-svc

@@ -52,6 +52,7 @@ targets:
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: potato-facts-3.yml
+  - path: potato-lies-3.yml
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
