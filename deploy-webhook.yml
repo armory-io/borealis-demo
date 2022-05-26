@@ -210,7 +210,7 @@ webhooks:
     bodyTemplate:
       inline:  >-
         {
-        "event_type": "webhookCallback",
+        "event_type": "checkLogs",
         "client_payload": {
             "callbackUri": "{{armory.callbackUri}}/callback",
             "environment": "{{context.environment}}"
@@ -229,7 +229,7 @@ webhooks:
     bodyTemplate:
       inline:  >-
         {
-        "event_type": "webhookCallback",
+        "event_type": "checkLogs",
         "client_payload": {
             "callbackUri": "{{armory.callbackUri}}/callback"
             }
@@ -248,7 +248,7 @@ webhooks:
     bodyTemplate:
       inline:  >-
         {
-        "event_type": "checkLogs",
+        "event_type": "webhookCallback",
         "client_payload": {
             "callbackUri": "{{armory.callbackUri}}/callback"
             }
