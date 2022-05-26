@@ -12,12 +12,6 @@ targets:
     namespace: borealis-dev
     # This is the key to a strategy under the strategies map
     strategy: rolling
-    constraints:
-      beforeDeployment:
-      - runWebhook:
-          name: Upgrade_Database_Schema
-          #context:
-          #  environment: dev
   staging:
     # the name of an agent configured account
     account: demo-staging-cluster
@@ -28,11 +22,6 @@ targets:
     # This is a list of manifest names that should be included in this deployment
     constraints:
       dependsOn: ["dev"]
-      beforeDeployment:
-      - runWebhook:
-          name: Upgrade_Database_Schema
-          context:
-            environment: staging
       afterDeployment:
         - runWebhook:
             name: Run_Integration_Tests
@@ -56,13 +45,6 @@ targets:
     strategy: mycanary
     constraints:
       dependsOn: ["staging"]
-      beforeDeployment:
-      - runWebhook:
-          name: Upgrade_Database_Schema
-          #context:
-          #  environment: production
-      - runWebhook:
-          name: Check_Change_Approval_Workflow
   prod-eu:
     # the name of an agent configured account
     account: demo-prod-eu-cluster
@@ -75,12 +57,6 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
-        - runWebhook:
-            name: Upgrade_Database_Schema
-            context:
-              environment: production
-        - runWebhook:
-            name: Check_Change_Approval_Workflow
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
