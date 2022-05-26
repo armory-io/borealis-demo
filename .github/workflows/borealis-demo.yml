@@ -29,7 +29,7 @@ jobs:
       #    ref: ${{ github.ref }}
       #    check-name: 'Integration_Tests'
       #    repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Wait for integration tests to succeed with buildtin timeout maybee
+      - name: Wait for integration tests to succeed with builtin timeout
         uses: fountainhead/action-wait-for-check@v1.0.0
         id: wait-for-build
         with:
