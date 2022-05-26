@@ -32,8 +32,6 @@ targets:
         - runWebhook:
             name: CheckLogs
         - pause:
-            untilApproved: true
-        - pause:
                     duration: 1
                     unit: seconds
   prod-west:
@@ -54,9 +52,6 @@ targets:
     strategy: myBlueGreen
     constraints:
       dependsOn: [ "staging" ]
-      beforeDeployment:
-        - pause:
-            untilApproved: true
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
