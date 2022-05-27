@@ -79,6 +79,8 @@ manifests:
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -124,7 +126,7 @@ strategies:
           weight: 100
   myBlueGreen:
     blueGreen:
-      activeService: potato-facts-external
+#      activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
             interval: 7
@@ -176,9 +178,14 @@ analysis:
         by (annotation_app, pod)) by (annotation_app)
 
 trafficManagement:
+  - targets: [prod-eu]
+    kubernetes:
+      - activeService: potato-facts-external
+      - activeService: potato-lies-external
   - targets: [prod-east]
     smi:
       - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
 
 webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
   - name: Check_Logs

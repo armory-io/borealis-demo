@@ -27,14 +27,49 @@ metadata:
     linkerd.io/inject: enabled
 spec:
   selector:
-    app: potato-facts-2
-  #    name: prth-test
+    app: potato-facts
   ports:
     - name: http
       port: 80
       targetPort: 8000
       protocol: TCP
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: potato-lies
+  name: potato-lies-external
+
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: gate-tcp
+      port: 80
+      protocol: TCP
+      targetPort: 8086
+  selector:
+    app: potato-lies
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: potato-lies-cluster-svc
+  labels:
+    app: potato-lies-2
+  annotations:
+    linkerd.io/inject: enabled
+spec:
+  selector:
+    app: potato-lies
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
 
 
 
