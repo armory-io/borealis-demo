@@ -27,7 +27,7 @@ metadata:
     linkerd.io/inject: enabled
 spec:
   selector:
-    app: potato-facts-2
+    app: potato-facts
   ports:
     - name: http
       port: 80
@@ -64,7 +64,7 @@ metadata:
     linkerd.io/inject: enabled
 spec:
   selector:
-    app: potato-lies-2
+    app: potato-lies
   ports:
     - name: http
       port: 80

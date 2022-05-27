@@ -80,7 +80,7 @@ manifests:
   - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
   - path: manifests/potato-lies.yml
-    targets: [dev, staging, infosec, prod-west, prod-eu]
+
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -185,6 +185,7 @@ trafficManagement:
   - targets: [prod-east]
     smi:
       - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
 
 webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
   - name: Check_Logs
