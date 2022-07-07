@@ -93,7 +93,7 @@ strategies:
           - setWeight:
               weight: 25
           - analysis:
-              interval: 7
+              interval: 8
               units: seconds
               numberOfJudgmentRuns: 1
               rollBackMode: manual
@@ -107,7 +107,7 @@ strategies:
           - setWeight:
               weight: 50
           - analysis:
-              interval: 7
+              interval: 8
               units: seconds
               numberOfJudgmentRuns: 3
               rollBackMode: manual
@@ -155,17 +155,12 @@ analysis:
       upperLimit: 10000 #3
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
-        by (annotation_app, pod)) by (annotation_app)
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
       upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
-        by (annotation_app, pod)) by (annotation_app)
-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
 trafficManagement:
   - targets: [prod-east]
     smi:
