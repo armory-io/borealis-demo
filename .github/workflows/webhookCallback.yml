@@ -5,8 +5,8 @@ on:
     types: webhookCallback
 
 jobs:
-  respond:
-    name: Calls the callback being passed in
+  test:
+    name: Integration_Tests
     runs-on: ubuntu-18.04
     steps:
       - name: getToken

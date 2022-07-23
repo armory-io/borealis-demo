@@ -1,0 +1,14 @@
+name: check status
+
+on: workflow_dispatch
+jobs:
+  rightSize:
+    name: RightSize my deployment based of KubeCost Reccomendations.
+    runs-on: ubuntu-latest
+    steps:
+      - #uses: armory/cli-deploy-action@main
+        name: script
+        run: armory deploy status -i c5a3f86c-464b-4268-91a3-c29752fad0d4 -o json
+        shell: bash
+        image: armory-cli:latest
+
