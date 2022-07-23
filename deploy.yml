@@ -1,6 +1,6 @@
 version: v1
 kind: kubernetes
-application: potato-facts3
+application: potato-facts2
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
 targets:
@@ -22,7 +22,9 @@ targets:
     # This is a list of manifest names that should be included in this deployment
     constraints:
       dependsOn: ["dev"]
-      beforeDeployment: []
+      afterDeployment:
+      - runWebhook:
+          name: Integration_Tests
   infosec:
     # the name of an agent configured account
     account: demo-staging-cluster
@@ -32,7 +34,9 @@ targets:
     strategy: rolling
     constraints:
       dependsOn: ["dev"]
-      beforeDeployment: []
+      afterDeployment:
+      - runWebhook:
+          name: Security_Scanners
   prod-west:
     # the name of an agent configured account
     account: demo-prod-west-cluster
@@ -57,12 +61,26 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
-  - path: /manifests/potato-facts.yml
-  - path: /manifests/potato-facts-external-service.yml
-    targets: [prod-west, prod-eu]
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
+    targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
@@ -82,6 +100,8 @@ strategies:
               rollForwardMode: automatic
               queries:
               - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
           #- pause:
           #    untilApproved: true
           - setWeight:
@@ -95,6 +115,8 @@ strategies:
               queries: 
               - avgCPUUsage-fail
               - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
           - setWeight:
               weight: 100
   rolling:
@@ -104,7 +126,7 @@ strategies:
           weight: 100
   myBlueGreen:
     blueGreen:
-      activeService: potato-facts-external
+#      activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
             interval: 7
@@ -117,7 +139,15 @@ strategies:
       shutDownOldVersionAfter:
         - pause:
             untilApproved: true
-
+        - runWebhook:
+            name: Check_Logs
+        - analysis:
+            interval: 7
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            queries:
+              - avgCPUUsage-pass
 analysis:
   defaultMetricProviderName: Stephen-Prometheus
   queries:
@@ -128,24 +158,73 @@ analysis:
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
         by (annotation_app, pod)) by (annotation_app)
-      #,annotation_deploy_armory_io_replica_set_name="${canaryReplicaSetName}"})
-      #${ARMORY_REPLICA_SET_NAME}
-      #,annotation_deploy_armory_io_replica_set_name="${ARMORY_REPLICA_SET_NAME}"
-      #${replicaSetName}
-      #${applicationName}
-      # note the time should actually be set to ${promQlStepInterval}
-    - name: invalidQuery
-      upperLimit: 10000 #3
-      lowerLimit: 0
-      queryTemplate: >-
-        avg (avg_over_time(c
     - name: avgCPUUsage-fail
-      upperLimit: 1
+      upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
         avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
         sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
         by (annotation_app, pod)) by (annotation_app)
 
+trafficManagement:
+  - targets: [prod-east]
+    smi:
+      - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
+  - targets: [prod-eu]
+    kubernetes:
+      - activeService: potato-facts-external
+      - activeService: potato-lies-external
 
-# armory deploy start -f deploy.yml
+webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
+  - name: Check_Logs
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
