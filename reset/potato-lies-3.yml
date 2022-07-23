@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: potato-lies
+  namespace: borealis
+  annotations:
+    "app": "potato-lies"
+    "prometheus.io/scrape": "true"
+spec:
+  revisionHistoryLimit: 1
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: potato-lies
+  template:
+    metadata:
+      labels:
+        app: potato-lies
+      annotations:
+        "app": "potato-lies"
+        "prometheus.io/scrape": "true"
+        linkerd.io/inject: enabled
+    spec:
+      containers:
+        #      - image:  armory/potato-lies:v1.6.0 #v1.5.1 #v1.6.0 # v1.7.0
+        - image:  demoimages/bluegreen:v5 #v5, v4, v3
+          imagePullPolicy: Always
+          name: potato-lies
+          resources:
+            limits:
+              cpu: "100m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+              memory: "70Mi"
+            requests:
+              cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+              memory: "70Mi"
+          env:
+            - name: NEW_RELIC_AGENT_ENBALED
+              value: 'false'
+          #ports:
+          #  - containerPort: 8086
+      restartPolicy: Always
+
+
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  labels:
+#    app: potato-lies
+#  name: potato-lies
+#  namespace: borealis
+#spec:
+#  ports:
+#  - name: gate-tcp
+#    port: 80
+#    protocol: TCP
+#    targetPort: 8086
+#  selector:
+#    app: potato-lies
+#  type: ClusterIP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

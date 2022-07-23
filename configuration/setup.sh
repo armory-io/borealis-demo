@@ -42,11 +42,27 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
     --set agentIdentifier=demo-prod-eu-cluster \
     -n borealis-demo-agent-prod-eu
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"
-
+#note, this command was needed, but then helm fixed a bug, so now we don't need the quotes.
+#helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"  --version 30.2.0
+helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s
 BASEDIR=$(dirname $0)
 
 kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+
+echo "Installing LinkerD service Mesh on cluster. if you run into errors - see docs at - https://linkerd.io/2.11/getting-started/"
+curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+echo "Adding Linked bin to PATH."
+export PATH=~/.linkerd2/bin:$PATH
+linkerd check --pre
+linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
+
+echo "LinkerD installation complete, hopefully"
+echo "Creating new environment for traffic management deployment"
+
+kubectl create ns borealis-prod-east
+
+kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
+
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 
 # also tried: --set kube-state-metrics.metricLabelsAllowlist=pods=[*]

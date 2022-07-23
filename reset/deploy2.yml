@@ -34,10 +34,18 @@ targets:
     namespace: borealis
     # This is the key to a strategy under the strategies map
     strategy: rolling
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: potato-facts-2.yml
+  - path: potato-lies-2.yml
 # The map of strategies, a deployment target will reference one of these
 strategies:
   # this is the name for the strategy
