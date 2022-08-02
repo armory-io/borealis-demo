@@ -1,0 +1,263 @@
+version: v1
+kind: kubernetes
+application: potato-facts4
+# Map of Deployment Targets, this is set up in a way where 
+# we can do multi-target deployments (multi-region or multi-cluster)
+targets:
+  # This in the name of a deployment, underneath it are its configuration
+  dev:
+    # the name of an agent configured account
+    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-dev
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+  staging:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-staging
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+        - runWebhook:
+            name: Run_Integration_Tests
+            context:
+              environment: production
+        - runWebhook:
+            name: Run_Security_Scanners
+        - runWebhook:
+            name: CheckLogs
+        - pause:
+                    duration: 1
+                    unit: seconds
+# The list of manifests sources
+manifests:
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - path: /manifests/potato-facts.yml
+  - path: /manifests/potato-facts-external-service.yml
+    targets: [ prod-eu]
+# The map of strategies, a deployment target will reference one of these
+strategies:
+  # this is the name for the strategy
+  mycanary:
+    # This map key, is the deployment strategy type
+    canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setWeight:
+              weight: 25
+          - analysis:
+              interval: 7
+              units: seconds
+              numberOfJudgmentRuns: 1
+              rollBackMode: manual
+              rollForwardMode: automatic
+              queries:
+              - avgCPUUsage-pass
+          - runWebhook:
+              name: CheckLogs
+          #- pause:
+          #    untilApproved: true
+          - setWeight:
+              weight: 50
+          - analysis:
+              interval: 7
+              units: seconds
+              numberOfJudgmentRuns: 3
+              rollBackMode: manual
+              rollForwardMode: manual
+              queries: 
+              - avgCPUUsage-fail
+              - avgCPUUsage-pass
+          - setWeight:
+              weight: 100
+  rolling:
+    canary:
+      steps: 
+      - setWeight:
+          weight: 100
+  myBlueGreen:
+    blueGreen:
+      activeService: potato-facts-external
+      previewService: potato-facts-preview
+      redirectTrafficAfter:
+        - runWebhook:
+              name: CheckLogs
+        - analysis:
+              interval: 7
+              units: seconds
+              numberOfJudgmentRuns: 3
+              rollBackMode: manual
+              rollForwardMode: manual
+              queries: 
+              - avgCPUUsage-fail
+              - avgCPUUsage-pass
+      shutDownOldVersionAfter:
+        - pause:
+            untilApproved: true
+
+analysis:
+  defaultMetricProviderName: Stephen-Prometheus
+  queries:
+    - name: avgCPUUsage-pass
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app)
+      #,annotation_deploy_armory_io_replica_set_name="${canaryReplicaSetName}"})
+      #${ARMORY_REPLICA_SET_NAME}
+      #,annotation_deploy_armory_io_replica_set_name="${ARMORY_REPLICA_SET_NAME}"
+      #${replicaSetName}
+      #${applicationName}
+      # note the time should actually be set to ${promQlStepInterval}
+    - name: invalidQuery
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(c
+    - name: avgCPUUsage-fail
+      upperLimit: 1
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app)
+
+
+# armory deploy start -f deploy.yml
+webhooks:
+  - name: CheckLogs
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Upgrade_Database_Schema
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback",
+            "environment": "{{context.environment}}"
+            }
+        }
+    retryCount: 3
+  - name: Check_Change_Approval_Workflow
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Run_Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Run_Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Run_Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Run_Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/stephenatwell/borealis-demo-1/dispatches
+    networkMode: direct
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
