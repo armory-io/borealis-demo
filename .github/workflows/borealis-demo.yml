@@ -12,6 +12,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: 'Kustomize Build'
+        uses: karancode/kustomize-github-action@master
+        with:
+          kustomize_version: '4.5.7'
+          kustomize_build_dir: 'thirdParty/locust'
+          kustomize_comment: true
+          kustomize_output_file: "thirdParty/locust/generatedManifest.yml"
+          kustomize_build_options: "--enable-helm"
+        env:
+          GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
       - name: Deployment
         uses: armory/cli-deploy-action@main
         with:
