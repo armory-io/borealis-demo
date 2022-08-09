@@ -17,7 +17,7 @@ jobs:
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           addContext: "environment2=prod,pr=test"
           applicationName: "potato-facts4sa" # yes?
