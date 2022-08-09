@@ -1,0 +1,333 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust-master
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust-worker
+---
+apiVersion: v1
+data: {}
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: example-lib
+---
+apiVersion: v1
+data:
+  docker-entrypoint.sh: |
+    #!/bin/sh
+
+    set -eu
+
+    exec /opt/venv/bin/locust $@
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust-config
+---
+apiVersion: v1
+data:
+  mylocustfile.py: "# -*- coding: utf-8 -*-\n\nfrom locust import HttpUser, task,
+    between\nimport random\n#from lib.example_functions import choose_random_page\n\n\ndefault_headers
+    = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36
+    (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36'}\n\n\ndef choose_random_page():\n
+    \   pages = [\n        #'/policies/privacy/',\n        #'/contact/',\n        #'/about/',\n
+    \       #'/search/howsearchworks/crawling-indexing/',\n        '/'\n    ]\n\n
+    \   return random.choice(pages)\n\nclass WebsiteUser(HttpUser):\n    wait_time
+    = between(1, 2)\n\n    @task(1)\n    def get_index(self):\n        self.client.get(\"/\",
+    headers=default_headers)\n\n    @task(3)\n    def get_random_page(self):\n        self.client.get(choose_random_page(),
+    headers=default_headers)\n\n\n    "
+kind: ConfigMap
+metadata:
+  name: locustfile-cm
+---
+apiVersion: v1
+data:
+  example_functions.py: |2-
+
+
+    # -*- coding: utf-8 -*-
+
+    import random
+
+
+    def choose_random_page():
+        pages = [
+            #'/policies/privacy/',
+            #'/contact/',
+            #'/about/',
+            #'/search/howsearchworks/crawling-indexing/',
+            '/'
+        ]
+
+        return random.choice(pages)
+kind: ConfigMap
+metadata:
+  name: locustfile-lib-cm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    component: master
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust
+spec:
+  ports:
+  - name: master-p1
+    port: 5557
+    protocol: TCP
+    targetPort: 5557
+  - name: master-p2
+    port: 5558
+    protocol: TCP
+    targetPort: 5558
+  - name: master-p3
+    port: 8089
+    protocol: TCP
+    targetPort: 8089
+  selector:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/name: locust
+    component: master
+    load_test: load-test
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    component: master
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: load-test
+      app.kubernetes.io/name: locust
+      component: master
+      load_test: load-test
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config-config: 56f327eb4d96f27a181e48b416b6669553bc1d5e548326824e5bbfac888e22fb
+        checksum/config-locust-lib: 950d29219b67764cb2280460a6bc64840eaf5596a54830db0f69bd61ad08caab
+        checksum/config-locust-locustfile: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/config-secret: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+      labels:
+        app.kubernetes.io/instance: load-test
+        app.kubernetes.io/name: locust
+        component: master
+        load_test: load-test
+    spec:
+      containers:
+      - args:
+        - --master
+        command:
+        - sh
+        - /config/docker-entrypoint.sh
+        env:
+        - name: LOCUST_HOST
+          value: http://potato-facts-internal:80
+        - name: LOCUST_LOGLEVEL
+          value: INFO
+        - name: LOCUST_LOCUSTFILE
+          value: /mnt/locust/mylocustfile.py
+        image: locustio/locust:2.8.6
+        imagePullPolicy: IfNotPresent
+        name: locust
+        ports:
+        - containerPort: 8089
+          name: loc-master-web
+          protocol: TCP
+        - containerPort: 5557
+          name: loc-master-p1
+          protocol: TCP
+        - containerPort: 5558
+          name: loc-master-p2
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /
+            port: 8089
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          timeoutSeconds: 30
+        resources: {}
+        securityContext: {}
+        volumeMounts:
+        - mountPath: /mnt/locust
+          name: locustfile
+        - mountPath: /mnt/locust/lib
+          name: lib
+        - mountPath: /config
+          name: config
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccountName: load-test-locust-master
+      volumes:
+      - configMap:
+          name: example-lib
+        name: lib
+      - configMap:
+          name: locustfile-cm
+        name: locustfile
+      - configMap:
+          name: load-test-locust-config
+        name: config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    component: worker
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: load-test
+      app.kubernetes.io/name: locust
+      component: worker
+      load_test: load-test
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config-config: 56f327eb4d96f27a181e48b416b6669553bc1d5e548326824e5bbfac888e22fb
+        checksum/config-locust-lib: 950d29219b67764cb2280460a6bc64840eaf5596a54830db0f69bd61ad08caab
+        checksum/config-locust-locustfile: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/config-secret: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+      labels:
+        app.kubernetes.io/instance: load-test
+        app.kubernetes.io/name: locust
+        component: worker
+        load_test: load-test
+    spec:
+      containers:
+      - args:
+        - --worker
+        command:
+        - sh
+        - /config/docker-entrypoint.sh
+        env:
+        - name: LOCUST_HOST
+          value: http://potato-facts-internal:80
+        - name: LOCUST_MASTER_NODE_HOST
+          value: load-test-locust
+        - name: LOCUST_MASTER_NODE_PORT
+          value: "5557"
+        - name: LOCUST_LOGLEVEL
+          value: INFO
+        - name: LOCUST_LOCUSTFILE
+          value: /mnt/locust/mylocustfile.py
+        image: locustio/locust:2.8.6
+        imagePullPolicy: IfNotPresent
+        name: locust
+        resources:
+          limits:
+            cpu: 1300m
+            memory: 5G
+          requests:
+            cpu: 1300m
+            memory: 5G
+        securityContext: {}
+        volumeMounts:
+        - mountPath: /mnt/locust
+          name: locustfile
+        - mountPath: /mnt/locust/lib
+          name: lib
+        - mountPath: /config
+          name: config
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccountName: load-test-locust-worker
+      volumes:
+      - configMap:
+          name: example-lib
+        name: lib
+      - configMap:
+          name: locustfile-cm
+        name: locustfile
+      - configMap:
+          name: load-test-locust-config
+        name: config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/app-root: /
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.org/mergeable-ingress-type: minion
+  labels:
+    app.kubernetes.io/instance: load-test
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: locust
+    app.kubernetes.io/version: 2.8.6
+    helm.sh/chart: locust-0.27.1
+    load_test: load-test
+  name: load-test-locust
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: a34d3aaf6283e4c36b7563ee321c9673-194964128.us-east-2.elb.amazonaws.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: load-test-locust
+            port:
+              number: 8089
+        path: /locust
+        pathType: Prefix
