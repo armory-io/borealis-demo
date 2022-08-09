@@ -20,7 +20,6 @@ jobs:
           kustomize_comment: true
           kustomize_output_file: "/borealis-demo/thirdParty/locust/generatedManifest.yml"
           kustomize_build_options: "--enable-helm"
-          enable_alpha_plugins: true
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
       - name: Deployment
