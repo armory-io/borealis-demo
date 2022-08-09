@@ -3,7 +3,14 @@ kind: kubernetes
 application: potato-facts2
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
-targets:
+
+##  New feature July 11, 2022
+#deploymentConfig:
+#  timeout:
+#    unit: minutes
+#    duration: 1
+
+targets:  # The list of manifests sources
   # This in the name of a deployment, underneath it are its configuration
   dev:
     # the name of an agent configured account
@@ -37,18 +44,6 @@ targets:
       afterDeployment:
       - runWebhook:
           name: Security_Scanners
-  prod-west:
-    # the name of an agent configured account
-    account: demo-prod-west-cluster
-    # Optionally override the namespaces that are in the manifests
-    namespace: borealis-prod
-    # This is the key to a strategy under the strategies map
-    strategy: mycanary
-    constraints:
-      dependsOn: ["infosec","staging"]
-      beforeDeployment:
-      - pause:
-          untilApproved: true
   prod-eu:
     # the name of an agent configured account
     account: demo-prod-eu-cluster
@@ -61,6 +56,18 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
+  prod-west:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: ["infosec","staging"]
+      beforeDeployment:
+      - pause:
+          untilApproved: true
   prod-east:
     # the name of an agent configured account
     account: demo-prod-west-cluster
@@ -73,16 +80,15 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
-# The list of manifests sources
-manifests:
+
+manifests:  # The map of strategies, a deployment target will reference one of these
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
   - path: manifests/potato-lies.yml
 
-# The map of strategies, a deployment target will reference one of these
-strategies:
+strategies:  # Stragies names and definition
   # this is the name for the strategy
   mycanary:
     # This map key, is the deployment strategy type
@@ -93,7 +99,7 @@ strategies:
           - setWeight:
               weight: 25
           - analysis:
-              interval: 7
+              interval: 8
               units: seconds
               numberOfJudgmentRuns: 1
               rollBackMode: manual
@@ -107,7 +113,7 @@ strategies:
           - setWeight:
               weight: 50
           - analysis:
-              interval: 7
+              interval: 8
               units: seconds
               numberOfJudgmentRuns: 3
               rollBackMode: manual
@@ -126,7 +132,8 @@ strategies:
           weight: 100
   myBlueGreen:
     blueGreen:
-#      activeService: potato-facts-external
+
+# activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
             interval: 7
@@ -148,23 +155,20 @@ strategies:
             rollBackMode: manual
             queries:
               - avgCPUUsage-pass
-analysis:
+
+analysis:  # Canary analysis queries and thresholds
   defaultMetricProviderName: Stephen-Prometheus
   queries:
     - name: avgCPUUsage-pass
       upperLimit: 10000 #3
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
-        by (annotation_app, pod)) by (annotation_app)
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
     - name: avgCPUUsage-fail
       upperLimit: 0.001
       lowerLimit: 0
       queryTemplate: >-
-        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
-        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
-        by (annotation_app, pod)) by (annotation_app)
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
 
 trafficManagement:
   - targets: [prod-east]
