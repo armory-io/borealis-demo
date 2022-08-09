@@ -42,7 +42,7 @@ spec:
             - name: NEW_RELIC_AGENT_ENBALED
               value: 'false'
           #ports:
-          #  - containerPort: 8086
+          #  - containerPort: 8000
       restartPolicy: Always
 
 

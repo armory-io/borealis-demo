@@ -1,0 +1,55 @@
+---
+helmCharts:
+- name: locust
+  version: 0.27.1
+  repo: https://charts.deliveryhero.io/
+  releaseName: load-test
+  valuesInline:
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+      - host: a34d3aaf6283e4c36b7563ee321c9673-194964128.us-east-2.elb.amazonaws.com
+        path: "/locust" #(/|$)(.*)
+        pathType: Prefix
+      annotations:    
+        nginx.org/mergeable-ingress-type: minion
+       # nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        nginx.ingress.kubernetes.io/app-root: /
+        #nginx.ingress.kubernetes.io/configuration-snippet: |
+        #  rewrite ^(/kubecost)$ $1/ permanent;
+    worker:
+      hpa:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 2
+      resources:
+        limits:
+          cpu: 1300m
+          memory: 5G
+        requests:
+          cpu: 1300m
+          memory: 5G
+    loadtest:
+      name: load-test
+      locust_locustfile_configmap: locustfile-cm
+      #locust_lib_configmap: locustfile-lib-cm
+      locust_locustfile: mylocustfile.py
+      # make sure you have permission to load test the host you configure
+      locust_host: http://potato-facts-internal:80 #https://your-load-test-target.example.domain
+configMapGenerator:
+- name: locustfile-cm
+  files:
+  - mylocustfile.py
+# you can delete this 2nd config map if you don't need to mount
+# additional files alongside the locustfile
+- name: locustfile-lib-cm
+  files:
+   - lib/example_functions.py
+#  - lib/payload.json
+#  - lib/payload2.json
+#  - lib/payload3.jsonlib
+generatorOptions:
+ disableNameSuffixHash: true
