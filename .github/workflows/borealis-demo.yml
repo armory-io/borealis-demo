@@ -16,24 +16,9 @@ jobs:
           helm: '3.9.2'
           kustomize: '4.5.7'  
       - name: Checkout code
-        uses: actions/checkout@v2    
-      - name: check ls
-        run: ls    
-      - name: check pwd
-        run: pwd
-      - name: check version
+        uses: actions/checkout@v2 
+      - name: buildLocust
         run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
-
-      #- name: 'Kustomize Build'
-      #  uses: karancode/kustomize-github-action@master
-      #  with:
-      #    kustomize_version: '4.5.7'
-      #    kustomize_build_dir: 'thirdParty/locust'
-      #    kustomize_comment: true
-      #    kustomize_output_file: "thirdParty/locust/generatedManifest.yml"
-      #    kustomize_build_options: "--enable-helm -e PATH=${{ steps.installHelm.outputs.helm-path }}"
-      #  env:
-      #    GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
       - name: Deployment
         uses: armory/cli-deploy-action@main
         with:
