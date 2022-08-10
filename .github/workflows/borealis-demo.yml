@@ -16,18 +16,19 @@ jobs:
         uses: yokawasa/action-setup-kube-tools@v0.7.1
         with:
           helm: '3.9.2'
-      #- name: check version
-      #  run: helm version
-      - name: 'Kustomize Build'
-        uses: karancode/kustomize-github-action@master
-        with:
-          kustomize_version: '4.5.7'
-          kustomize_build_dir: 'thirdParty/locust'
-          kustomize_comment: true
-          kustomize_output_file: "thirdParty/locust/generatedManifest.yml"
-          kustomize_build_options: "--enable-helm -e PATH=${{ steps.installHelm.outputs.helm-path }}"
-        env:
-          GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          kustomize: '4.5.7'
+      - name: check version
+        run: kustomize --enable-helm /thirdParty/locust > thirdParty/locust/generatedManifest.yml
+      #- name: 'Kustomize Build'
+      #  uses: karancode/kustomize-github-action@master
+      #  with:
+      #    kustomize_version: '4.5.7'
+      #    kustomize_build_dir: 'thirdParty/locust'
+      #    kustomize_comment: true
+      #    kustomize_output_file: "thirdParty/locust/generatedManifest.yml"
+      #    kustomize_build_options: "--enable-helm -e PATH=${{ steps.installHelm.outputs.helm-path }}"
+      #  env:
+      #    GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
       - name: Deployment
         uses: armory/cli-deploy-action@main
         with:
