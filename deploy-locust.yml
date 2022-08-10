@@ -98,7 +98,7 @@ manifests:
   - path: manifests/potato-lies.yml
   - path: manifests/potato-facts-internal-service.yml
     targets: [perf-test]
-  - path: thirdparty/locust/generatedManifest.yml
+  - path: thirdParty/locust/generatedManifest.yml
     targets: [perf]
 
 # The map of strategies, a deployment target will reference one of these
