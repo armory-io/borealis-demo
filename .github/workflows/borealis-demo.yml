@@ -18,7 +18,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2    
       - name: check ls
-        run: ls /
+        run: ls    
+      - name: check pwd
+        run: pwd
       - name: check version
         run: kustomize build --enable-helm /thirdParty/locust > thirdParty/locust/generatedManifest.yml
 
