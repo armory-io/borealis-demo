@@ -18,7 +18,7 @@ jobs:
           helm: '3.9.2'
           kustomize: '4.5.7'
       - name: check version
-        run: kustomize --enable-helm /thirdParty/locust > thirdParty/locust/generatedManifest.yml
+        run: kustomize build --enable-helm /thirdParty/locust > thirdParty/locust/generatedManifest.yml
       #- name: 'Kustomize Build'
       #  uses: karancode/kustomize-github-action@master
       #  with:
