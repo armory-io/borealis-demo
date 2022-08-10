@@ -10,13 +10,13 @@ jobs:
     name: deploy from main
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: installHelm
         uses: yokawasa/action-setup-kube-tools@v0.7.1
         with:
           helm: '3.9.2'
-          kustomize: '4.5.7'      
+          kustomize: '4.5.7'  
+      - name: Checkout code
+        uses: actions/checkout@v2    
       - name: check ls
         run: ls /
       - name: check version
