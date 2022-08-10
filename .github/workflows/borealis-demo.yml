@@ -22,7 +22,7 @@ jobs:
       - name: check pwd
         run: pwd
       - name: check version
-        run: kustomize build --enable-helm /thirdParty/locust > thirdParty/locust/generatedManifest.yml
+        run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
 
       #- name: 'Kustomize Build'
       #  uses: karancode/kustomize-github-action@master
