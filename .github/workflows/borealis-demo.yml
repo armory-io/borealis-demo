@@ -16,6 +16,10 @@ jobs:
         uses: yokawasa/action-setup-kube-tools@v0.7.1
         with:
           helm: '3.9.2'
+          
+      - name: check version
+        run: |
+          helm version
       - name: 'Kustomize Build'
         uses: karancode/kustomize-github-action@master
         with:
