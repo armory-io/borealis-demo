@@ -8,6 +8,5 @@ To set this demo up on your kubernetes environment:
 4) run configuration/setup.sh <clientID> <clientSecret> where clientID and clientSecret are the credentials from step 2. This will create 
  
 #
-
  
  
