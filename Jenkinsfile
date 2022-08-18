@@ -4,15 +4,30 @@ pipeline {
         stage('Start Deploy') {
             agent {
                 kubernetes {
-                    image 'armory/armory-cli:latest'
-                    // Run the container on the node specified at the
-                    // top-level of the Pipeline, in the same workspace,
-                    // rather than on a new node entirely:
-                    reuseNode true
+                    image 'armory/armory-cli:latest' #if using 'docker' instead of 'kubernetes' just use this.
+                        containerTemplates{
+                            spec{
+                                containers{
+                                    env{
+            - name 'CLIENT_ID'
+              valueFrom{
+                    secretKeyRef{
+                  key 'armory-client-id'
+                  name 'armory-client-id'
+                    }}
+            - name: SECRET
+                        valueFrom{
+                            secretKeyRef{
+                  key 'armory-secret'
+                  name 'armory-secret'
+                            }}
+          image 'armory/armory-cli:latest'
+          name armory-cli
+                        }
                 }
             }
             steps {
-                sh 'armory deploy start -f deploy.yml'
+                sh 'armory deploy start -f deploy.yml -c $(CLIENT_ID) -s $(SECRET)'
             }
         }
     }
