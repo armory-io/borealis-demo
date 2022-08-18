@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Start Deploy') {
             agent {
-                docker {
+                kebernetes {
                     image 'armory/armory-cli:latest'
                     // Run the container on the node specified at the
                     // top-level of the Pipeline, in the same workspace,
@@ -12,7 +12,7 @@ pipeline {
                 }
             }
             steps {
-                armory deploy start -f deploy.yml
+                sh 'armory deploy start -f deploy.yml'
             }
         }
     }
