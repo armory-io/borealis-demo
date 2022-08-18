@@ -4,7 +4,7 @@ pipeline {
         stage('Start Deploy') {
             agent {
                 kubernetes {
-                    image 'armory/armory-cli:latest' #if using 'docker' instead of 'kubernetes' just use this.
+                    image 'armory/armory-cli:latest'
                         containerTemplates{
                             spec{
                                 containers{
