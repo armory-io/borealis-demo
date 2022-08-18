@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Start Deploy') {
             agent {
-                kebernetes {
+                kubernetes {
                     image 'armory/armory-cli:latest'
                     // Run the container on the node specified at the
                     // top-level of the Pipeline, in the same workspace,
