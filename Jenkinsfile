@@ -7,7 +7,7 @@ pipeline {
                         containerTemplate{
                             image 'armory/armory-cli:latest'
                             name 'armory-cli'
-                            command 'armory deploy start -f deploy.yml -c $(CLIENT_ID) -s $(SECRET)'
+                            command 'ls'
                         }
                 }
             }
