@@ -3,9 +3,8 @@ pipeline {
     stages {
         stage('Checkout external proj') {
             steps {
-                git branch: 'my_specific_branch',
-                    credentialsId: 'my_cred_id',
-                    url: 'ssh://git@test.com/proj/test_proj.git'
+                git branch: 'main',
+                    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
                 sh "ls -lat"
             }
         }
