@@ -5,11 +5,9 @@ pipeline {
         stage('Start Deploy image') {
             agent {
                 kubernetes {
-                        containerTemplate{
-                            image 'armory/armory-cli:latest'
-                            name 'armory-cli'
-                            command '/bin/sh -c "git clone https://github.com/stephenatwell/borealis-demo-1.git; pwd; ls; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET"'
-                        }
+                    
+                    defaultContainer 'maven'
+                    yamlFile 'jenkinsPod.yml'
                 }
             }
             steps {
