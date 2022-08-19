@@ -22,13 +22,15 @@ pipeline {
                                                     key 'armory-secret'
                                                     name 'armory-secret'
                                                 }
-                                            }}
+                                            }
+                                        }
                                      ]
                                     image 'armory/armory-cli:latest'
                                     name armory-cli
                                 }
                             }
                         }
+                }
             steps {
                 sh 'armory deploy start -f deploy.yml -c $(CLIENT_ID) -s $(SECRET)'
             }
