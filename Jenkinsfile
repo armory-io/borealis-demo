@@ -9,9 +9,9 @@ pipeline {
             //        yamlFile 'jenkinsPod.yml'
             //    }
             //}
-            tools {
-                armory
-            }
+            //tools {
+            //    armory
+            //}
             steps{
                 //git branch: 'main',
                 //    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
