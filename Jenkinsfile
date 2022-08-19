@@ -8,6 +8,7 @@ pipeline {
                         containerTemplate{
                             image 'armory/armory-cli:latest'
                             name 'armory-cli'
+                            command '/bin/sh -c "pwd && ls"'
                         }
                     }
                 }
