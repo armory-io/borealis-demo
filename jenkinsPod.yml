@@ -19,5 +19,5 @@ metadata:
                 secretKeyRef:
                   key: armory-secret
                   name: armory-secret
-          image: 'armory/armory-cli:latest'
+          image: alpine:latest #'armory/armory-cli:latest'
           name: armory-cli
