@@ -4,9 +4,11 @@ pipeline {
         stage('Start Deploy') {
             agent {
                 kubernetes {
-                    containerTemplates=[{
-                        image = 'armory/armory-cli:latest'
-                    }]
+                    containerTemplates{
+                        containerTemplate{
+                            image = 'armory/armory-cli:latest'
+                        }
+                    }
                 }
             }
             steps {
