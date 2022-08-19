@@ -13,8 +13,8 @@ pipeline {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/stephenatwell/borealis-demo-1.git'
-                sh "ls -lat"
-                sh "armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET"
+                sh 'ls -lat'
+                sh 'armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET'
             }
         }
     }
