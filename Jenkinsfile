@@ -15,9 +15,8 @@ pipeline {
                                                  key 'armory-client-id'
                                                  name 'armory-client-id'
                                              }
-                                         }}
-                                    ]
-                                    ,[{name  'SECRET'
+                                         }},
+                                        {name  'SECRET'
                                             valueFrom{
                                                 secretKeyRef{
                                                     key 'armory-secret'
