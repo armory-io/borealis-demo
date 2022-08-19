@@ -10,7 +10,7 @@ pipeline {
                 sh 'armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET'
             }
         }
-        stage('Start Deploy') {
+        stage('Start Deploy image') {
             agent {
                 kubernetes {
                         containerTemplate{
