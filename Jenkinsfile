@@ -6,7 +6,7 @@ pipeline {
                 kubernetes {
                     containerTemplates{
                         spec{
-                            containers{
+                            containers=[{
                                 env = [
                                     {name 'CLIENT_ID'
                                      valueFrom{
@@ -27,7 +27,7 @@ pipeline {
                                 ]
                                 image 'armory/armory-cli:latest'
                                 name armory-cli
-                            }
+                            }]
                         }
                     }
                 }
