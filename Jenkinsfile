@@ -7,7 +7,7 @@ pipeline {
                 kubernetes {
                 
             containerTemplate{
-                image 'alpine:latest'
+                image 'mrnonz/alpine-git-curl:latest'
                 name 'armory-cli'
                 command '/bin/sh -c "git clone https://github.com/stephenatwell/borealis-demo-1.git; curl -sL go.armory.io/get-cli | bash; pwd; ls; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET"'
             }
