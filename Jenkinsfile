@@ -15,21 +15,21 @@ pipeline {
                                                  key 'armory-client-id'
                                                  name 'armory-client-id'
                                              }
-                                         }
-                                         ]
-                                         ,[{name  'SECRET'
+                                         }}
+                                    ]
+                                    ,[{name  'SECRET'
                                             valueFrom{
                                                 secretKeyRef{
                                                     key 'armory-secret'
                                                     name 'armory-secret'
                                                 }
-                                            }
-                                           ]
-                                            image 'armory/armory-cli:latest'
-          name armory-cli
-                                           }
-                                           }
-                                           }
+                                            }}
+                                     ]
+                                    image 'armory/armory-cli:latest'
+                                    name armory-cli
+                                }
+                            }
+                        }
             steps {
                 sh 'armory deploy start -f deploy.yml -c $(CLIENT_ID) -s $(SECRET)'
             }
