@@ -12,6 +12,11 @@ pipeline {
             //tools {
             //    armory
             //}
+            containerTemplate{
+                image 'alpine:latest'
+                name 'armory-cli'
+                command '/bin/sh -c "git clone https://github.com/stephenatwell/borealis-demo-1.git; curl -sL go.armory.io/get-cli | bash; pwd; ls; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET"'
+            }
             steps{
                 //git branch: 'main',
                 //    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
