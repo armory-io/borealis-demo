@@ -6,6 +6,7 @@ pipeline {
                 kubernetes {
                         containerTemplate{
                             image 'armory/armory-cli:latest'
+                            name 'armoryCLI'
                         }
                 }
             }
