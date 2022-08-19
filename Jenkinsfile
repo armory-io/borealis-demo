@@ -4,13 +4,11 @@ pipeline {
         stage('Start Deploy') {
             agent {
                 kubernetes {
-                    containerTemplates[
                         containerTemplate{
                             image 'armory/armory-cli:latest'
                             name 'armory-cli'
                             command '/bin/sh -c "pwd && ls"'
                         }
-                    ]
                 }
             }
             steps {
