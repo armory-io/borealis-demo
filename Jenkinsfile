@@ -8,7 +8,7 @@ pipeline {
                     url: 'ssh://git@test.com/proj/test_proj.git'
                 sh "ls -lat"
             }
-        },
+        }
         stage('Start Deploy') {
             agent {
                 kubernetes {
