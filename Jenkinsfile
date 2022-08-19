@@ -3,16 +3,17 @@ pipeline {
     stages {
         
         stage('Start Deploy image') {
-            agent {
-                kubernetes {
-                    
-                    defaultContainer 'maven'
-                    yamlFile 'jenkinsPod.yml'
-                }
-            }
+            //agent {
+            //    kubernetes {
+            //        
+            //        defaultContainer 'maven'
+            //        yamlFile 'jenkinsPod.yml'
+            //    }
+            //}
             steps{
-                git branch: 'main',
-                    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
+                //git branch: 'main',
+                //    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
+                sh 'curl -sL go.armory.io/get-cli | bash'
                 sh 'ls -lat /usr/local/bin'
                 sh 'pwd'
                 sh 'armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET'
