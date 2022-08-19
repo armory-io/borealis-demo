@@ -4,32 +4,9 @@ pipeline {
         stage('Start Deploy') {
             agent {
                 kubernetes {
-                    containerTemplates{
-                        spec{
-                            containers=[{
-                                env = [
-                                    {name 'CLIENT_ID'
-                                     valueFrom{
-                                         secretKeyRef{
-                                             key 'armory-client-id'
-                                             name 'armory-client-id'
-                                         }
-                                     }
-                                    },
-                                    {name  'SECRET'
-                                     valueFrom{
-                                         secretKeyRef{
-                                             key 'armory-secret'
-                                             name 'armory-secret'
-                                         }
-                                     }
-                                    }
-                                ]
-                                image 'armory/armory-cli:latest'
-                                name armory-cli
-                            }]
-                        }
-                    }
+                    containerTemplates=[{
+                        image = 'armory/armory-cli:latest'
+                    }]
                 }
             }
             steps {
