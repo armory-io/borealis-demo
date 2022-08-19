@@ -10,6 +10,8 @@ pipeline {
                     yamlFile 'jenkinsPod.yml'
                 }
             }
+            steps{
+            }
         }
     }
 }
