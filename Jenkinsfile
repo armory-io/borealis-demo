@@ -3,13 +3,13 @@ pipeline {
     stages {
         
         stage('Start Deploy image') {
-            //agent {
-            //    kubernetes {
-            //        
-            //        defaultContainer 'maven'
-            //        yamlFile 'jenkinsPod.yml'
-            //    }
-            //}
+            agent {
+                kubernetes {
+                    
+                    defaultContainer 'maven'
+                    yamlFile 'jenkinsPod.yml'
+                }
+            }
             steps{
                 //git branch: 'main',
                 //    url: 'https://github.com/stephenatwell/borealis-demo-1.git'
