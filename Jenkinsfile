@@ -17,7 +17,7 @@ pipeline {
             //    }
             //}
             tools{
-                armory ''
+                CustomTool 'armory'
             }
             steps{
                 //container('armory-cli'){
