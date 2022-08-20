@@ -16,6 +16,9 @@ pipeline {
             //        idleMinutes 1
             //    }
             //}
+            tools{
+                armory ''
+            }
             steps{
                 //container('armory-cli'){
                     sh 'echo $PATH'
