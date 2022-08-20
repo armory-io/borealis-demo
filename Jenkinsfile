@@ -19,6 +19,7 @@ pipeline {
             steps{
                 //container('armory-cli'){
                     sh 'ls -la'
+                    sh 'ls -la /home/jenkins/agent'
                     sh 'armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET'
                 //}
             }
