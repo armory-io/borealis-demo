@@ -4,9 +4,11 @@ metadata:
   name: armory-cli
   namespace: jenkins
   containers:
-        - command:
-            - /bin/sh
-            - '-c'
-            - pwd; ls; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET
+        - command: ["tail", "-f", "/dev/null"]  # this or any command that is bascially a noop is required, this is so that you don't overwrite the entrypoint of the base container
+      
+          #command:
+          #  - /bin/sh
+          #  - '-c'
+          #  - pwd; ls; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET
           image: 'armory/armory-cli:latest'
           name: armory-cli
