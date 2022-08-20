@@ -13,6 +13,7 @@ pipeline {
             //}
                     //defaultContainer 'armory-cli'
                     yamlFile 'jenkinsPod.yml'
+                    idleMinutes 1
                 }
             }
             steps{
