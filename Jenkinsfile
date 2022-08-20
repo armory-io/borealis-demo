@@ -17,7 +17,8 @@ pipeline {
                 }
             }
             steps{
-                //container('docker'){
+                //container('armory-cli'){
+                    sh 'ls -la'
                     sh 'armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET'
                 //}
             }
