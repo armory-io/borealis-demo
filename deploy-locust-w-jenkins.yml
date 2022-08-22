@@ -233,7 +233,10 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
     retryCount: 3
   - name: Integration_Tests
     method: POST
-    uriTemplate: http://jenkins.jenkins:8080/buildByToken/buildWithParameters?token={{secrets.jenkins_token}}&job=WebhookCallback&url={{armory.callbackUri}}/callback
+    uriTemplate: http://jenkins.jenkins:8080/job/WebhookCallback/buildWithParameters?url={{armory.callbackUri}}/callback
     retryCount: 3
     agentIdentifier: demo-staging-cluster
     networkMode: remoteNetworkAgent
+    headers:
+      - key: Authorization
+        value: Basic YWRtaW46MTExYmNhMzBlZGIwZTdkYTU2MzE3YTk4ZTY2ODNiNDM1YQ==
