@@ -113,7 +113,7 @@ strategies:
           - setWeight:
               weight: 25
           - analysis:
-              interval: 7
+              interval: 10
               units: seconds
               numberOfJudgmentRuns: 1
               rollBackMode: manual
@@ -149,7 +149,7 @@ strategies:
 #      activeService: potato-facts-external
       redirectTrafficAfter:
         - analysis:
-            interval: 7
+            interval: 10
             units: seconds
             numberOfJudgmentRuns: 1
             rollBackMode: manual
