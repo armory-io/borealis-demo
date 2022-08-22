@@ -44,7 +44,7 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
 #note, this command was needed, but then helm fixed a bug, so now we don't need the quotes.
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"  --version 30.2.0
-helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s
+helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2
 BASEDIR=$(dirname $0)
 
 kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
