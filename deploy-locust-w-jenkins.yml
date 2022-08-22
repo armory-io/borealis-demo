@@ -235,3 +235,4 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
     method: POST
     uriTemplate: http://jenkins.jenkins:8080/buildByToken/buildWithParameters?token={{secrets.jenkins_token}}&job=WebhookCallback&url={{armory.callbackUri}}/callback
     retryCount: 3
+    agentIdentifier: demo-staging-cluster
