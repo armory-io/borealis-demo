@@ -50,14 +50,14 @@ BASEDIR=$(dirname $0)
 kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
 
 echo "Installing LinkerD service Mesh on cluster. if you run into errors - see docs at - https://linkerd.io/2.11/getting-started/"
-curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+sh linkerd.sh
 echo "Adding Linked bin to PATH."
 export PATH=~/.linkerd2/bin:$PATH
 linkerd check --pre
-linkerd install --crds --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
-linkerd install --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
-curl -sL https://linkerd.github.io/linkerd-smi/install | sh
-linkerd smi install | kubectl apply -f -
+#linkerd install --crds --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
+linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
+#curl -sL https://linkerd.github.io/linkerd-smi/install | sh
+#linkerd smi install | kubectl apply -f -
 echo "LinkerD installation complete, hopefully"
 echo "Creating new environment for traffic management deployment"
 
