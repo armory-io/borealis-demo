@@ -47,7 +47,7 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
 
 sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
 echo "Attempting Prometheus install"
-helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2
+helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m
 BASEDIR=$(dirname $0)
 kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
 
