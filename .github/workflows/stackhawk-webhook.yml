@@ -1,4 +1,4 @@
-name: Webhook Callback
+name: stackhawk
 
 on:
   repository_dispatch:
