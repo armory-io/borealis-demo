@@ -2,7 +2,7 @@ name: stackhawk
 
 on:
   repository_dispatch:
-    types: webhookCallback
+    types: stackhawk
 
 jobs:
   test:
