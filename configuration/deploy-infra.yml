@@ -1,0 +1,43 @@
+version: v1
+kind: kubernetes
+application: CD-as-a-Service Demo Environment # The name of the application to deploy.
+deploymentConfig:
+    timeout: # Optional. Sets a timeout for rolling back deployments that do not reach a READY state. Applies to all deployments in this file. Must be equal to or greater than 1 minute
+        duration: 1800
+        unit: SECONDS
+targets: # Map of your deployment target, Armory CD-as-a-Service supports deploying to one target cluster.
+    armory-rna-staging: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-staging # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    armory-rna-dev: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-dev # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    armory-rna-prod-eu: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-prod-eu # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    #prometheus:
+    #    account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+    #    namespace: borealis-demo-infra # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+    #    strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+
+# The list of manifest sources. Can be a directory or file.
+manifests:
+    - path: manifests/rna-dev.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-dev]
+    - path: manifests/rna-staging.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-staging]
+    - path: manifests/rna-eu.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-prod-eu]
+    - path: manifests/agent-secret.yml
+      targets: [armory-rna-staging,armory-rna-dev,armory-rna-prod-eu]
+    #- path: manifests/prometheus.yml
+    #  targets: [prometheus]
+strategies: # A map of named strategies that can be assigned to deployment targets in the targets block.
+    rolling: # Name for a strategy that you use to refer to it. Used in the target block. This example uses strategy1 as the name.
+        canary: # The deployment strategy type. Use canary.
+            steps:
+                - setWeight:
+                    weight: 100

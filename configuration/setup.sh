@@ -1,5 +1,6 @@
 echo "reminder: run configuration/setup.sh <clientID> <clientSecret> where clientID and clientSecret are the credentials from step 2."
 echo "setting up borealis agents using clientIt: $1 and secret: $2"
+brew install yq
 kubectl create namespace borealis-demo-agent-prod
 kubectl create namespace borealis-demo-agent-staging
 kubectl create namespace borealis-demo-agent-dev
@@ -10,10 +11,14 @@ kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
 kubectl create ns borealis-prod-eu
 kubectl create ns borealis-demo-agent-prod-eu
+mkdir manifests
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
-kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
+export clientid=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-id"}}' | base64 -d`
+export secret=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-secret"}}' | base64 -d`
+echo $clientid
+kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid --dry-run=client -o=yaml > manifests/agent-secret.yml
+
+#kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}' > manifests/agent-secret.yaml
 
 # Optionally Add Armory Chart repo, if you haven't
 helm repo add armory https://armory.jfrog.io/artifactory/charts
@@ -21,29 +26,16 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 # Update repo to fetch latest armory charts
 helm repo update
 # Install or Upgrade armory rna chart
-helm upgrade --install armory-rna-prod armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-prod-west-cluster \
-    -n borealis-demo-agent-prod
-helm upgrade --install armory-rna-staging armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-staging-cluster \
-    -n borealis-demo-agent-staging
-helm upgrade --install armory-rna-dev armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-dev-cluster \
-    -n borealis-demo-agent-dev
-helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
-    --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id' \
-    --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret' \
-    --set agentIdentifier=demo-prod-eu-cluster \
-    -n borealis-demo-agent-prod-eu
-#helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricLabelsAllowlist[0]=pods=[*]
-#note, this command was needed, but then helm fixed a bug, so now we don't need the quotes.
-#helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"  --version 30.2.0
+helm upgrade --install armory-rna-prod armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-west-cluster     -n borealis-demo-agent-prod
+helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-prod> manifests/rna-dev.yml
+helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-prod> manifests/rna-staging.yml
+helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
+
+
+helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set grafana.defaultDashboardsEnabled=false > manifests/prometheus.yml
+
+sleep 60 # make sure the first agent finished starting...
+armory deploy start -f deploy-infra.yml
 
 sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
 echo "Attempting Prometheus install"

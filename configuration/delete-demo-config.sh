@@ -7,7 +7,9 @@ helm uninstall armory-rna-staging \
 helm uninstall armory-rna-dev \
     -n borealis-demo-agent-dev
 helm uninstall prometheus -n=borealis-demo-infra
-#kubectl delete namespace borealis-demo-agents
+kubectl delete namespace borealis-demo-agents
+#do not delete demo agent prod, we want the secret in it kept around!!!
 #kubectl delete namespace borealis-demo-agent-prod
-#kubectl delete namespace borealis-demo-agent-staging
-#kubectl delete namespace borealis-demo-agent-dev
+
+kubectl delete namespace borealis-demo-agent-staging
+kubectl delete namespace borealis-demo-agent-dev
