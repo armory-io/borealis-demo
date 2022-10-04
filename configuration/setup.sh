@@ -1,6 +1,5 @@
 echo "reminder: run configuration/setup.sh <clientID> <clientSecret> where clientID and clientSecret are the credentials from step 2."
 echo "setting up borealis agents using clientIt: $1 and secret: $2"
-brew install yq
 kubectl create namespace borealis-demo-agent-prod
 kubectl create namespace borealis-demo-agent-staging
 kubectl create namespace borealis-demo-agent-dev
@@ -10,6 +9,7 @@ kubectl create ns borealis-staging
 kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
 kubectl create ns borealis-prod-eu
+kubectl create ns borealis-prod-east
 kubectl create ns borealis-demo-agent-prod-eu
 mkdir manifests
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
@@ -32,16 +32,16 @@ helm template demo-staging-cluster armory/remote-network-agent     --set clientI
 helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
 
 
-helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set grafana.defaultDashboardsEnabled=false > manifests/prometheus.yml
+helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false> manifests/prometheus.yml
 
-sleep 60 # make sure the first agent finished starting...
-armory deploy start -f deploy-infra.yml
 
-sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
-echo "Attempting Prometheus install"
-helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m
+#sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
+#echo "Attempting Prometheus install"
+#helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m
 BASEDIR=$(dirname $0)
-kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+#kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-eu #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+
+
 
 echo "Installing LinkerD service Mesh on cluster. if you run into errors - see docs at - https://linkerd.io/2.11/getting-started/"
 sh linkerd.sh
@@ -50,14 +50,18 @@ export PATH=~/.linkerd2/bin:$PATH
 linkerd check --pre
 #linkerd install --crds --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
 linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
+#linkerd install --set proxyInit.runAsRoot=true > manifests/linkerd.yml #installing linkerD via armory hits the length limit bug. grr.
 #curl -sL https://linkerd.github.io/linkerd-smi/install | sh
 #linkerd smi install | kubectl apply -f -
 echo "LinkerD installation complete, hopefully"
 echo "Creating new environment for traffic management deployment"
 
-kubectl create ns borealis-prod-east
+sleep 60 # make sure the first agent finished starting...
+armory deploy start -f deploy-infra.yml
 
-kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
+
+
+#kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
 
 #container_cpu_load_average_10s{namespace="borealis", job="kubelet"} * on (pod)  group_left (label_app) sum(kube_pod_labels{job="kube-state-metrics",label_app="hostname",namespace="borealis"}) by (label_app, pod)
 
