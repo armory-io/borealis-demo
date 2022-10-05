@@ -3,28 +3,17 @@ name: Webhook Callback
 on:
   repository_dispatch:
     types: AutomatedAppDeploy
-
 jobs:
-  test:
-    name: Integration_Tests
-    runs-on: ubuntu-18.04
-    steps:
-      - name: getToken
-        id: getToken
-        uses: fjogeleit/http-request-action@master
+  build:
+    name: deploy from main
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Checkout code
+        uses: actions/checkout@v2 
+      - name: Deployment
+        uses: armory/cli-deploy-action@main
         with:
-          url: "https://auth.cloud.armory.io/oauth/token"
-          method: "POST"
-          customHeaders: '{ "Content-Type": "application/x-www-form-urlencoded" }'
-          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.CDAAS_CLIENT_ID }}&client_secret=${{ secrets.CDAAS_CLIENT_SECRET }}'
-      - name: callCallback
-        id: callCallback
-        uses: fjogeleit/http-request-action@master
-        with:
-          url: ${{ github.event.client_payload.callbackUri }}
-          method: 'POST'
-          bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
-          customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Webhook was successful: ${{ github.event.client_payload.callbackUri }}" }'
-      - name: show http response
-        run: echo ${{ steps.callCallback.outputs.response }}
+          clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
+          clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
+          path-to-file: "/deploy-automated-2.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          applicationName: "potato-facts" 
