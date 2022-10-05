@@ -1,4 +1,4 @@
-name: Webhook Callback
+name: AutomatedAppDeploy
 
 on:
   repository_dispatch:
