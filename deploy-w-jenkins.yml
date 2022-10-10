@@ -217,18 +217,10 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
     retryCount: 3
   - name: Integration_Tests
     method: POST
-    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    uriTemplate: http://jenkins.jenkins:8080/job/WebhookCallback/buildWithParameters?url={{armory.callbackUri}}/callback
+    retryCount: 3
+    agentIdentifier: demo-staging-cluster
+    networkMode: remoteNetworkAgent
     headers:
       - key: Authorization
-        value: token {{secrets.github_token}}
-      - key: Content-Type
-        value: application/json
-    bodyTemplate:
-      inline:  >-
-        {
-        "event_type": "checkLogs",
-        "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback"
-            }
-        }
-    retryCount: 3
+        value: Basic {{secrets.jenkins_token}}
