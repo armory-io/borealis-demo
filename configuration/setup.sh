@@ -15,6 +15,7 @@ kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credenti
 kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 
+sh argo-rollouts.sh
 # Optionally Add Armory Chart repo, if you haven't
 helm repo add armory https://armory.jfrog.io/artifactory/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
