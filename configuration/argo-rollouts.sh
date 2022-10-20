@@ -19,6 +19,9 @@ esac
 
 curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-${OS}-amd64
 chmod +x ./kubectl-argo-rollouts-${OS}-amd64
-#export PATH=$PATH:
+#BASEDIR=$(dirname $0)
+#export PATH=$PATH:$BASEDIR/kubectl-argo-rollouts-${OS}-amd64
 echo "running command with sudo, enter your password"
 sudo mv ./kubectl-argo-rollouts-${OS}-amd64 /usr/local/bin/kubectl-argo-rollouts
+
+kubectl argo rollouts dashboard -n borealis-argo
