@@ -10,6 +10,7 @@ kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
 kubectl create ns borealis-prod-eu
 kubectl create ns borealis-demo-agent-prod-eu
+kubectl create ns borealis-argo
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
