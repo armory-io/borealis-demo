@@ -10,12 +10,13 @@ kubectl create ns borealis-infosec
 kubectl create ns borealis-prod
 kubectl create ns borealis-prod-eu
 kubectl create ns borealis-demo-agent-prod-eu
+kubectl create ns borealis-argo
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 
-sh argo-rollouts.sh
+
 # Optionally Add Armory Chart repo, if you haven't
 helm repo add armory https://armory.jfrog.io/artifactory/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -47,6 +48,7 @@ helm upgrade --install armory-rna-prod-eu armory/remote-network-agent \
 #helm install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set "kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*]" --set "global.scrape_interval=5s"  --version 30.2.0
 
 sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
+sh argo-rollouts.sh
 echo "Attempting Prometheus install"
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m
 BASEDIR=$(dirname $0)
