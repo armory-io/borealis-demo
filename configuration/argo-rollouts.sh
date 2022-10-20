@@ -24,4 +24,4 @@ chmod +x ./kubectl-argo-rollouts-${OS}-amd64
 echo "running command with sudo, enter your password"
 sudo mv ./kubectl-argo-rollouts-${OS}-amd64 /usr/local/bin/kubectl-argo-rollouts
 
-kubectl argo rollouts dashboard -n borealis-argo
+kubectl argo rollouts dashboard -n borealis-argo &
