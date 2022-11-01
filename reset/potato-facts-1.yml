@@ -8,7 +8,7 @@ metadata:
     "prometheus.io/scrape": "true"
 spec:
   revisionHistoryLimit: 1
-  replicas: 10
+  replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
