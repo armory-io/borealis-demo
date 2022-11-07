@@ -19,7 +19,7 @@ spec:
     spec:
       serviceAccountName: remote-network-agent-service-account
       containers:
-        - image:  demoimages/cmd-hook:v0.2
+        - image:  demoimages/cmd-hook:v0.3
           imagePullPolicy: Always
           name: cmd-hook
           resources:
