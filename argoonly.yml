@@ -168,12 +168,6 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
             }
         }
     retryCount: 3
-  - name: Refer to Argo Rollouts for statusGet
-    method: GET
-    uriTemplate: http://cmd-hook.borealis-demo-agent-prod:8081/cmd?cmd=kubectl&arg=wait%20-n%3Dborealis-argo%20rollout%2Fpotato-facts%20--for%3Dcondition%3DCompleted&callbackURL={{armory.callbackUri}}%2fcallback
-    networkMode: remoteNetworkAgent
-    agentIdentifier: demo-prod-west-cluster
-    retryCount: 3
   - name: Refer to Argo Rollouts for status
     method: POST
     uriTemplate: http://cmd-hook.borealis-demo-agent-prod:8081/cmd
@@ -184,6 +178,6 @@ webhooks: #Note: All webhooks in this demo simply cann the github action workflo
       inline:  >-
         {
         "cmd": "kubectl",
-        "arg": "wait -n=borealis-argo rollout/potato-facts --for=condition=Completed",
+        "arg": "wait -n=borealis-argo rollout/potato-facts --for=condition=Completed --timeout=30m",
         "callbackURL": "{{armory.callbackUri}}/callback"
         }
