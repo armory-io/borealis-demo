@@ -1,0 +1,147 @@
+version: v1
+kind: kubernetes
+application: CD-as-a-Service Demo Environment # The name of the application to deploy.
+deploymentConfig:
+    timeout: # Optional. Sets a timeout for rolling back deployments that do not reach a READY state. Applies to all deployments in this file. Must be equal to or greater than 1 minute
+        duration: 1800
+        unit: SECONDS
+targets: # Map of your deployment target, Armory CD-as-a-Service supports deploying to one target cluster.
+    armory-rna-staging: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-staging # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    armory-rna-dev: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-dev # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    armory-rna-prod-eu: # Name for your deployment. Use a descriptive value such as the environment name.
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-agent-prod-eu # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    prometheus:
+        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+        namespace: borealis-demo-infra # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+
+    # This in the name of a deployment, underneath it are its configuration
+    dev:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster #sa-eks-direct #saClusterViaHelm
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-dev
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+    staging:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-staging
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+        # This is a list of manifest names that should be included in this deployment
+    infosec:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-infosec
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+    prod-west:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-prod
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+    prod-east:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-prod-east
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+    prod-eu:
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-prod-eu
+        # This is the key to a strategy under the strategies map
+        strategy: rolling
+    deployed-infra-test: # this environment tries to test that the infra is actually working...
+        # the name of an agent configured account
+        account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+        namespace: borealis-prod-eu
+        # This is the key to a strategy under the strategies map
+        strategy: mycanary
+        constraints:
+          dependsOn: [prod-eu, prometheus]
+
+
+    #linkerd:
+        # the name of an agent configured account
+    #    account: demo-prod-west-cluster
+        # Optionally override the namespaces that are in the manifests
+    #    namespace: linkerd
+        # This is the key to a strategy under the strategies map
+    #    strategy: rolling
+
+# The list of manifest sources. Can be a directory or file.
+manifests:
+    - path: manifests/rna-dev.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-dev]
+    - path: manifests/rna-staging.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-staging]
+    - path: manifests/rna-eu.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+      targets: [armory-rna-prod-eu]
+    - path: manifests/agent-secret.yml
+      targets: [armory-rna-staging,armory-rna-dev,armory-rna-prod-eu]
+    - path: manifests/prometheus.yml
+      targets: [prometheus]
+    - path: ../reset/potato-facts-3.yml
+      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test]
+    - path: ../reset/potato-lies-3.yml
+      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test]
+    - path: ../manifests/potato-facts-external-service.yml #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
+      targets: [prod-eu,prod-east]
+    #- path: manifests/linkerd.yml
+    #  targets: [linkerd]
+strategies: # A map of named strategies that can be assigned to deployment targets in the targets block.
+  mycanary:
+    # This map key, is the deployment strategy type
+    canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setWeight:
+              weight: 25
+          - analysis: # ensure prometheus works...
+              interval: 10
+              units: seconds
+              numberOfJudgmentRuns: 1
+              queries:
+              - avgCPUUsage-pass
+          - setWeight:
+              weight: 100
+  rolling:
+    canary:
+      steps: 
+      - setWeight:
+          weight: 100
+
+analysis:  # Canary analysis queries and thresholds
+  defaultMetricProviderName: Stephen-Prometheus
+  queries:
+    - name: avgCPUUsage-pass
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app) OR on() vector(0)
+
+trafficManagement:
+  - targets: [deployed-infra-test] # ensure linkerD is working...
+    smi:
+      - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
