@@ -103,6 +103,7 @@ strategies:  # Stragies names and definition
               units: seconds
               numberOfJudgmentRuns: 1
               rollBackMode: manual
+              lookbackMethod: GROWING
               rollForwardMode: automatic
               queries:
               - avgCPUUsage-pass
@@ -118,6 +119,7 @@ strategies:  # Stragies names and definition
               numberOfJudgmentRuns: 3
               rollBackMode: manual
               rollForwardMode: manual
+              lookbackMethod: GROWING
               queries: 
               - avgCPUUsage-fail
               - avgCPUUsage-pass
@@ -141,6 +143,7 @@ strategies:  # Stragies names and definition
             numberOfJudgmentRuns: 1
             rollBackMode: manual
             rollForwardMode: automatic
+            lookbackMethod: GROWING
             queries:
               - avgCPUUsage-pass
       shutDownOldVersionAfter:
@@ -153,6 +156,7 @@ strategies:  # Stragies names and definition
             units: seconds
             numberOfJudgmentRuns: 1
             rollBackMode: manual
+            lookbackMethod: GROWING
             queries:
               - avgCPUUsage-pass
 
