@@ -58,7 +58,9 @@ linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
 echo "LinkerD installation complete, hopefully"
 echo "Creating new environment for traffic management deployment"
 
+
 kubectl apply -f "../manifests/potato-facts-external-service.yml" -n borealis-prod-east
+kubectl apply -f "../manifests/potato-facts-external-service.yml" -n borealis-prod-eu
 
 sleep 60 # make sure the first agent finished starting...
 armory deploy start -f deploy-infra.yml
