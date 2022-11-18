@@ -18,6 +18,9 @@ export clientid=`kubectl -n=borealis-demo-agent-prod get secret rna-client-crede
 export secret=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-secret"}}' | base64 -d`
 echo $clientid
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid --dry-run=client -o=yaml > manifests/agent-secret.yml
+kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
+kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
+kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
 
 #kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}' > manifests/agent-secret.yaml
 
@@ -27,14 +30,24 @@ helm repo add armory https://armory.jfrog.io/artifactory/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 # Update repo to fetch latest armory charts
 helm repo update
+
+# I hate to do it.... but this is a workaround for CDaaS not applying new CustomREsourceDefinitions first on a first time install.
+helm template prometheus prometheus-community/prometheus -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false --debug --set server.service.servicePort=9090 --version 15.18.0> manifests/prometheus.yml
+helm upgrade --install prometheus prometheus-community/prometheus -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false --debug --set server.service.servicePort=9090 --version 15.18.0
+
+#move prometheus install before RNAs as it needs large amount of continguous ram.
+
 # Install or Upgrade armory rna chart
 helm upgrade --install armory-rna-prod armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-west-cluster     -n borealis-demo-agent-prod
-helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-prod> manifests/rna-dev.yml
-helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-prod> manifests/rna-staging.yml
-helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
+#helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-prod> manifests/rna-dev.yml
+#helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-prod> manifests/rna-staging.yml
+#helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
+helm upgrade --install demo-dev-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-dev
+helm upgrade --install demo-staging-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-staging
+helm upgrade --install demo-prod-eu-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod-eu
 
 
-helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false> manifests/prometheus.yml
+
 
 sh argo-rollouts.sh
 #sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
@@ -63,6 +76,11 @@ kubectl apply -f "../manifests/potato-facts-external-service.yml" -n borealis-pr
 kubectl apply -f "../manifests/potato-facts-external-service.yml" -n borealis-prod-eu
 
 sleep 60 # make sure the first agent finished starting...
+
+
+read -p "Go configure the Prometheus Integration in the CDaaS UI and then press [Enter] to run a test deploy..."
+
+
 armory deploy start -f deploy-infra.yml
 
 

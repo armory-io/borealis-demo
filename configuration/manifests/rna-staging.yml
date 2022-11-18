@@ -1,0 +1,110 @@
+---
+# Source: remote-network-agent/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: remote-network-agent-service-account
+  labels:
+    helm.sh/chart: remote-network-agent-1.7.3
+    app.kubernetes.io/name: "remote-network-agent"
+    app.kubernetes.io/instance: demo-staging-cluster
+    app.kubernetes.io/version: "v2.1.16"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: remote-network-agent/templates/cluster-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rna-demo-staging-cluster-cr
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+# Source: remote-network-agent/templates/cluster-role-binding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rna-demo-staging-cluster-cr-binding
+  labels:
+    helm.sh/chart: remote-network-agent-1.7.3
+    app.kubernetes.io/name: "remote-network-agent"
+    app.kubernetes.io/instance: demo-staging-cluster
+    app.kubernetes.io/version: "v2.1.16"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+  - kind: ServiceAccount
+    name: remote-network-agent-service-account
+    namespace: borealis-demo-agent-prod
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rna-demo-staging-cluster-cr
+---
+# Source: remote-network-agent/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remote-network-agent-deployment
+  labels:
+    helm.sh/chart: remote-network-agent-1.7.3
+    app.kubernetes.io/name: "remote-network-agent"
+    app.kubernetes.io/instance: demo-staging-cluster
+    app.kubernetes.io/version: "v2.1.16"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "remote-network-agent"
+      app.kubernetes.io/instance: demo-staging-cluster
+  template:
+    metadata:
+      
+      labels:
+        app.kubernetes.io/name: "remote-network-agent"
+        app.kubernetes.io/instance: demo-staging-cluster
+        
+    spec:
+      serviceAccountName: remote-network-agent-service-account
+      containers:
+        - name: remote-network-agent
+          image: "armory/remote-network-agent:v2.1.16"
+          imagePullPolicy: IfNotPresent
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 8080
+          startupProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 6
+            httpGet:
+              path: /health/liveness
+              port: 8080
+          resources:
+            requests:
+              memory: 1500Mi
+              cpu: 500m
+            limits:
+              memory: 2500Mi
+              cpu: 750m
+          env:
+            
+            - name: ADDITIONAL_JVM_OPTS
+              value: >-
+                -Xms1039M
+                -Xmx1039M
+                -Darmory.iam.oidc.client-id=encrypted:k8s!n:rna-client-credentials!k:client-id
+                -Darmory.iam.oidc.client-secret=encrypted:k8s!n:rna-client-credentials!k:client-secret
+                -Dkubernetes-cluster-mode-enabled=true
+                -Dagent-identifier=demo-staging-cluster

@@ -6,22 +6,22 @@ deploymentConfig:
         duration: 1800
         unit: SECONDS
 targets: # Map of your deployment target, Armory CD-as-a-Service supports deploying to one target cluster.
-    armory-rna-staging: # Name for your deployment. Use a descriptive value such as the environment name.
-        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
-        namespace: borealis-demo-agent-staging # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
-        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
-    armory-rna-dev: # Name for your deployment. Use a descriptive value such as the environment name.
-        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
-        namespace: borealis-demo-agent-dev # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
-        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
-    armory-rna-prod-eu: # Name for your deployment. Use a descriptive value such as the environment name.
-        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
-        namespace: borealis-demo-agent-prod-eu # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
-        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
-    prometheus:
-        account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
-        namespace: borealis-demo-infra # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
-        strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    #armory-rna-staging: # Name for your deployment. Use a descriptive value such as the environment name.
+    #    account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+    #    namespace: borealis-demo-agent-staging # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+    #    strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    #armory-rna-dev: # Name for your deployment. Use a descriptive value such as the environment name.
+    #    account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+    #    namespace: borealis-demo-agent-dev # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+    #    strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    #armory-rna-prod-eu: # Name for your deployment. Use a descriptive value such as the environment name.
+    #    account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+    #    namespace: borealis-demo-agent-prod-eu # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+    #    strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
+    #prometheus:
+    #    account: demo-prod-west-cluster # The name that you assigned to the deployment target cluster when you installed the RNA.
+    #    namespace: borealis-demo-infra # (Recommended) Set the namespace that the app gets deployed to. Overrides the namespaces that are in your manifests
+    #    strategy: rolling # A named strategy from the strategies block. This example uses the name strategy1.
 
     # This in the name of a deployment, underneath it are its configuration
     dev:
@@ -75,7 +75,7 @@ targets: # Map of your deployment target, Armory CD-as-a-Service supports deploy
         # This is the key to a strategy under the strategies map
         strategy: mycanary
         constraints:
-          dependsOn: [prod-eu, prometheus]
+          dependsOn: [prod-eu] #, prometheus]
 
 
     #linkerd:
@@ -88,16 +88,16 @@ targets: # Map of your deployment target, Armory CD-as-a-Service supports deploy
 
 # The list of manifest sources. Can be a directory or file.
 manifests:
-    - path: manifests/rna-dev.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
-      targets: [armory-rna-dev]
-    - path: manifests/rna-staging.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
-      targets: [armory-rna-staging]
-    - path: manifests/rna-eu.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
-      targets: [armory-rna-prod-eu]
-    - path: manifests/agent-secret.yml
-      targets: [armory-rna-staging,armory-rna-dev,armory-rna-prod-eu]
-    - path: manifests/prometheus.yml
-      targets: [prometheus]
+    #- path: manifests/rna-dev.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+    #  targets: [armory-rna-dev]
+    #- path: manifests/rna-staging.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+    #  targets: [armory-rna-staging]
+    #- path: manifests/rna-eu.yml # Read all yaml|yml files in the directory and deploy all the manifests found.
+    #  targets: [armory-rna-prod-eu]
+    #- path: manifests/agent-secret.yml
+    #  targets: [armory-rna-staging,armory-rna-dev,armory-rna-prod-eu]
+    #- path: manifests/prometheus.yml
+    #  targets: [prometheus]
     - path: ../reset/potato-facts-3.yml
       targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test]
     - path: ../reset/potato-lies-3.yml
@@ -119,6 +119,7 @@ strategies: # A map of named strategies that can be assigned to deployment targe
               interval: 10
               units: seconds
               numberOfJudgmentRuns: 1
+              lookbackMethod: GROWING
               queries:
               - avgCPUUsage-pass
           - setWeight:
