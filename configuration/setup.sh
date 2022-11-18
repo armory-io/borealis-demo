@@ -18,6 +18,10 @@ export clientid=`kubectl -n=borealis-demo-agent-prod get secret rna-client-crede
 export secret=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-secret"}}' | base64 -d`
 echo $clientid
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid --dry-run=client -o=yaml > manifests/agent-secret.yml
+kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
+kubectl -n=borealis-demo-agent-dev create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
+kubectl -n=borealis-demo-agent-prod-eu create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
+
 
 #kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}' > manifests/agent-secret.yaml
 
@@ -35,6 +39,9 @@ helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientI
 
 
 helm template prometheus prometheus-community/kube-prometheus-stack -n=borealis-demo-infra --set kube-state-metrics.metricAnnotationsAllowList[0]=pods=[*] --set global.scrape_interval=5s --version 35.4.2 --set global.scrape_timeout=1m --set defaultRules.create=false --set global.rbac.create=false --set kube-state-metrics.rbac.create=false  --set grafana.defaultDashboardsEnabled=false --set prometheusOperator.tls.enabled=false> manifests/prometheus.yml
+
+# I hate to do it.... but this is a workaround for CDaaS not applying new CustomREsourceDefinitions first on a first time install.
+kubectl apply -f manifests/prometheus.yml
 
 sh argo-rollouts.sh
 #sleep 5 #=Adding a timed sleep before prometheus install to see if it resolves some installation issues,
