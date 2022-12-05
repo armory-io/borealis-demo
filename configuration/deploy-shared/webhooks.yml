@@ -1,0 +1,58 @@
+version: v1
+kind: kubernetes
+application: potato-facts2
+metadata:
+  name: deploymentConfig
+
+webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
+  - name: Check_Logs
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
