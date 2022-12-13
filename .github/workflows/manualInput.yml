@@ -3,7 +3,7 @@ name: Mixed inputs
 on:
   workflow_dispatch:
     inputs:
-      name:
+      template:
         type: choice
         description: template
         options: 
