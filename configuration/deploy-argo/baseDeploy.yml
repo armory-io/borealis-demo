@@ -1,0 +1,31 @@
+version: v1
+kind: kubernetes
+application: potato-facts
+metadata:
+  name: deploymentConfig
+targets:
+  prod-operator:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-argo
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+      afterDeployment:
+      - runWebhook:
+          name: Refer to Argo Rollouts for status
+manifests:  # The map of strategies, a deployment target will reference one of these
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
+    targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+  - path: manifests/argo-facts.yml
+    targets: ["prod-operator"]
+
+

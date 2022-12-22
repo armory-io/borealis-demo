@@ -81,9 +81,10 @@ sleep 60 # make sure the first agent finished starting...
 read -p "Go configure the Prometheus Integration in the CDaaS UI and then press [Enter] to run a test deploy..."
 
 
+
+./build-deploy-kustommizations.sh
+
 armory deploy start -f deploy-infra.yml
-
-
 
 #kubectl apply -f "$BASEDIR/../manifests/potato-facts-external-service.yml" -n borealis-prod-east
 
