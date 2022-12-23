@@ -9,5 +9,6 @@ manifests:  # The map of strategies, a deployment target will reference one of t
   - path: manifests/potato-facts-external-service.yml
     targets: [prod-west, prod-eu, prod-east]
   - path: manifests/potato-lies.yml
+webhooks: []
 
 
