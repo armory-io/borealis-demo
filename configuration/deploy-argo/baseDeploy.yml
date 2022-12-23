@@ -27,5 +27,20 @@ manifests:  # The map of strategies, a deployment target will reference one of t
   - path: manifests/potato-lies.yml
   - path: manifests/argo-facts.yml
     targets: ["prod-operator"]
+webhooks:
+  - name: Refer to Argo Rollouts for status
+    method: POST
+    uriTemplate: http://cmd-hook.borealis-demo-agent-prod:8081/cmd
+    networkMode: remoteNetworkAgent
+    agentIdentifier: demo-prod-west-cluster
+    retryCount: 3
+    bodyTemplate:
+      inline:  >-
+        {
+        "cmd": "kubectl",
+        "arg": "wait -n=borealis-argo rollout/potato-facts --for=condition=Completed --timeout=30m",
+        "callbackURL": "{{armory.callbackUri}}/callback"
+        }
+
 
 

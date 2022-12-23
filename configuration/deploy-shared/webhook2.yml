@@ -1,0 +1,102 @@
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Check_Logs
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Integration_Tests
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Send_Slack_Deployment_Starting
+    method: POST
+    uriTemplate: "{{secrets.slackwebhookURL}}"
+    bodyTemplate:
+      inline:  >-
+        {
+        "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}",
+        "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is starting."
+        }
+    retryCount: 3
+    disableCallback: true
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Send_Slack_Deployment_Complete
+    method: POST
+    uriTemplate: "{{secrets.slackwebhookURL}}"
+    bodyTemplate:
+      inline:  >-
+        {
+        "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}",
+        "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is complete."
+        }
+    retryCount: 3
+    disableCallback: true
+- op: add
+  path: "/webhooks/-"
+  value:
+    name: Send_Slack_Deployment_Approval_Required
+    method: POST
+    uriTemplate: "{{secrets.slackwebhookURL}}" 
+    bodyTemplate:
+      inline:  >-
+        {
+        "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}",
+        "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} requires a manual approval."
+        }
+    retryCount: 3
+    disableCallback: true
