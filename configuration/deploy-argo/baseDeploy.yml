@@ -1,0 +1,47 @@
+version: v1
+kind: kubernetes
+application: potato-facts
+metadata:
+  name: deploymentConfig
+targets:
+  prod-operator:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-argo
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+      afterDeployment:
+      - runWebhook:
+          name: Refer to Argo Rollouts for status
+manifests:  # The map of strategies, a deployment target will reference one of these
+  - path: manifests/potato-facts.yml
+    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east]
+  - path: manifests/argo-facts.yml
+    targets: ["prod-operator"]
+  - path: manifests/potato-facts-external-service.yml
+    targets: ["prod-operator",prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east]
+webhooks:
+  - name: Refer to Argo Rollouts for status
+    method: POST
+    uriTemplate: http://cmd-hook.borealis-demo-agent-prod:8081/cmd
+    networkMode: remoteNetworkAgent
+    agentIdentifier: demo-prod-west-cluster
+    retryCount: 3
+    bodyTemplate:
+      inline:  >-
+        {
+        "cmd": "kubectl",
+        "arg": "wait -n=borealis-argo rollout/potato-facts --for=condition=Completed --timeout=30m",
+        "callbackURL": "{{armory.callbackUri}}/callback"
+        }
+
+
+

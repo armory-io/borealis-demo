@@ -1,0 +1,6 @@
+version: v1
+kind: kubernetes
+application: potato-facts2
+metadata:
+  name: deploymentConfig
+webhooks: []

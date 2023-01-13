@@ -1,0 +1,14 @@
+version: v1
+kind: kubernetes
+application: potato-facts
+metadata:
+  name: deploymentConfig
+manifests:  # The map of strategies, a deployment target will reference one of these
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
+    targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+webhooks: []
+
+

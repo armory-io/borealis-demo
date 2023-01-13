@@ -1,0 +1,98 @@
+version: v1
+kind: kubernetes
+metadata:
+  name: deploymentConfig
+targets:  # The list of manifests sources
+  # This in the name of a deployment, underneath it are its configuration
+  dev:
+    # the name of an agent configured account
+    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-dev
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+  staging:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-staging
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+      - runWebhook:
+          name: Integration_Tests
+  infosec:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-infosec
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+      - runWebhook:
+          name: Security_Scanners
+  prod-eu:
+    # the name of an agent configured account
+    account: demo-prod-eu-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-eu
+    # This is the key to a strategy under the strategies map
+    strategy: myBlueGreen
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      afterDeployment:
+      - runWebhook:
+          name: Send_Slack_Deployment_Complete
+  prod-west:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: ["infosec","staging"]
+      beforeDeployment:
+      - pause:
+          untilApproved: true
+      - runWebhook:
+          name: Send_Slack_Deployment_Approval_Required
+      afterDeployment:
+      - runWebhook:
+          name: Send_Slack_Deployment_Complete
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      afterDeployment:
+      - runWebhook:
+          name: Send_Slack_Deployment_Complete
+trafficManagement:
+  - targets: [prod-east]
+    smi:
+      - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
+  - targets: [prod-eu]
+    kubernetes:
+      - activeService: potato-facts-external
+      - activeService: potato-lies-external
