@@ -1,0 +1,59 @@
+
+tenants:
+- Flagship
+- Vanguard
+- Aurora
+- main
+roles:
+    - name: Flagship Team Member
+      tenant: Flagship
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+    - name: Flagship Admin
+      tenant: Flagship
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+        - type: api
+          resource: tenant
+          permission: full
+    - name: Vanguard Team Member
+      tenant: Vanguard
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+    - name: Vanguard Admin
+      tenant: Vanguard
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+        - type: api
+          resource: tenant
+          permission: full
+    - name: Aurora Team Member
+      tenant: Aurora
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+    - name: Aurora Admin
+      tenant: Aurora
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+        - type: api
+          resource: tenant
+          permission: full
+    - name: Non-Admin User
+      tenant: main
+      grants:
+        - type: api
+          resource: deployment
+          permission: full
+

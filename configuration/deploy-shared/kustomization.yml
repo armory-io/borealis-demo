@@ -5,7 +5,6 @@ kind: Component #Kustomization
 #openapi:
 #  path: openapi.json
 patches:
-  - path: webhooks.yml
   - path: webhook2.yml
     target:
       version: .*

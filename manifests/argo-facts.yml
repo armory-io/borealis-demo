@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: potato-facts
-  namespace: borealis
+  namespace: borealis-argo
   annotations: 
     "app": "potato-facts"
     "prometheus.io/scrape": "true"
