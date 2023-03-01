@@ -67,6 +67,13 @@ targets: # Map of your deployment target, Armory CD-as-a-Service supports deploy
         namespace: borealis-prod-eu
         # This is the key to a strategy under the strategies map
         strategy: rolling
+    prod-apac:
+      # the name of an agent configured account
+      account: demo-prod-west-cluster
+      # Optionally override the namespaces that are in the manifests
+      namespace: borealis-prod-apac
+      # This is the key to a strategy under the strategies map
+      strategy: rolling
     deployed-infra-test: # this environment tries to test that the infra is actually working...
         # the name of an agent configured account
         account: demo-prod-west-cluster
