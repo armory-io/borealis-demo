@@ -70,6 +70,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod
     strategy: mycanary
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary
   staging:
     account: demo-staging-cluster
     constraints:
