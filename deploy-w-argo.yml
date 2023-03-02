@@ -124,6 +124,7 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - prod-west
       - prod-eu
       - prod-east
+      - prod-apac
   - path: manifests/argo-facts.yml
     targets:
       - prod-operator
@@ -133,6 +134,7 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - prod-west
       - prod-eu
       - prod-east
+      - prod-apac
   - path: manifests/potato-facts-internal-service.yml
     targets:
       - dev
@@ -147,6 +149,10 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - prod-west
       - prod-eu
       - prod-east
+      - prod-apac
+  - path: manifests/istio-files/
+    targets:
+      - prod-apac
 strategies: #This section defines the strategies environments can use to deploy.
   myBlueGreen:
     blueGreen:
@@ -248,6 +254,19 @@ trafficManagement: #Traffic management configuration
         previewService: potato-lies-internal
     targets:
       - prod-eu
+  - istio:
+      - virtualService:
+          name: potato-facts
+        destinationRule:
+          name: potato-facts
+          activeSubsetName: v1
+      - virtualService:
+          name: potato-lies-external
+        destinationRule:
+          name: potato-lies-external
+          activeSubsetName: v1
+    targets:
+      - prod-apac
 webhooks: #Webhooks can be used to run external automation.
   - agentIdentifier: demo-prod-west-cluster
     bodyTemplate:

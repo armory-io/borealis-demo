@@ -55,13 +55,20 @@ targets:
     namespace: borealis-argo
     # This is the key to a strategy under the strategies map
     strategy: rolling
+  prod-apac:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-apac
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
 # The list of manifests sources
 manifests:
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: potato-facts-3.yml
-    targets: ['prod-east','prod-west','prod-eu','staging','infosec','dev']
+    targets: ['prod-east','prod-west','prod-eu','staging','infosec','dev', 'prod-apac']
   - path: potato-lies-3.yml
-    targets: ['prod-east','prod-west','prod-eu','staging','infosec','dev']
+    targets: ['prod-east','prod-west','prod-eu','staging','infosec','dev', 'prod-apac']
   - path: argo-facts-3.yml
     targets: ['prod']
 # The map of strategies, a deployment target will reference one of these
