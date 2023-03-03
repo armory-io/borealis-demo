@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
 #      - image:  armory/potato-facts:v1.5.1 #v1.6.0 # v1.7.0
-      - image:  index.docker.io/armory/potatofacts:v1.5.0 #demoimages/bluegreen:v3 #v5, v4, v3
+      - image:  index.docker.io/armory/potatofacts:v1.5.1 #demoimages/bluegreen:v3 #v5, v4, v3
         imagePullPolicy: Always
         name: potato-facts
         resources:

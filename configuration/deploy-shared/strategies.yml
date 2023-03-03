@@ -23,6 +23,13 @@ strategies:
         # List of canary steps
         steps:
           # The map key is the step type
+          - exposeServices: 
+              services:     # list of services to expose. 
+              - potato-facts-external
+              - potato-lies-external
+              ttl: # Optional. Sets lifetime of the exposed service preview. After that period service preview automatically expires. Max lifetime cannot exceed 24 hours, Min is 1 minute, default is 5 minutes.
+                duration: 30
+                unit: MINUTES # SECONDS, MINUTES or HOURS
           - setWeight:
               weight: 25
           - analysis:
@@ -72,9 +79,13 @@ strategies:
             services:     # list of services to expose. These need to be located in the same namespace as deployment and must match names of the existing service resources on the target cluster. 
             - potato-facts-internal
             - potato-lies-internal
+            - potato-facts-external
+            - potato-lies-external
             ttl: # Optional. Sets lifetime of the exposed service preview. After that period service preview automatically expires. Max lifetime cannot exceed 24 hours, Min is 1 minute, default is 5 minutes.
               duration: 30
               unit: MINUTES # SECONDS, MINUTES or HOURS
+        - pause:
+            untilApproved: true
       shutDownOldVersionAfter:
         - pause:
             untilApproved: true
