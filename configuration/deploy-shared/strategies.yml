@@ -1,0 +1,90 @@
+
+version: v1
+kind: kubernetes
+metadata:
+  name: deploymentConfig
+strategies: 
+  rolling:
+    canary:
+      steps: 
+      - setWeight:
+          weight: 100
+      - exposeServices: # step name
+          services:     # list of services to expose. These need to be located in the same namespace as deployment and must match names of the existing service resources on the target cluster. 
+          - potato-facts-internal
+          - potato-lies-internal
+          ttl: # Optional. Sets lifetime of the exposed service preview. After that period service preview automatically expires. Max lifetime cannot exceed 24 hours, Min is 1 minute, default is 5 minutes.
+            duration: 30
+            unit: MINUTES # SECONDS, MINUTES or HOURS
+  # this is the name for the strategy
+  mycanary:
+    # This map key, is the deployment strategy type
+    canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setWeight:
+              weight: 25
+          - analysis:
+              interval: 10
+              units: seconds
+              lookbackMethod: GROWING
+              numberOfJudgmentRuns: 1
+              rollBackMode: manual
+              rollForwardMode: automatic
+              queries:
+              - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
+          #- pause:
+          #    untilApproved: true
+          - setWeight:
+              weight: 50
+          - analysis:
+              interval: 10
+              units: seconds
+              lookbackMethod: GROWING
+              numberOfJudgmentRuns: 3
+              rollBackMode: manual
+              rollForwardMode: manual
+              queries: 
+              - avgCPUUsage-fail
+              - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
+          - setWeight:
+              weight: 100
+  myBlueGreen:
+    blueGreen:
+
+# activeService: potato-facts-external
+      redirectTrafficAfter:
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            rollForwardMode: automatic
+            queries:
+              - avgCPUUsage-pass
+        - exposeServices: # step name
+            services:     # list of services to expose. These need to be located in the same namespace as deployment and must match names of the existing service resources on the target cluster. 
+            - potato-facts-internal
+            - potato-lies-internal
+            ttl: # Optional. Sets lifetime of the exposed service preview. After that period service preview automatically expires. Max lifetime cannot exceed 24 hours, Min is 1 minute, default is 5 minutes.
+              duration: 30
+              unit: MINUTES # SECONDS, MINUTES or HOURS
+      shutDownOldVersionAfter:
+        - pause:
+            untilApproved: true
+        - runWebhook:
+            name: Check_Logs
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            queries:
+              - avgCPUUsage-pass

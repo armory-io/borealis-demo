@@ -1,0 +1,21 @@
+{
+  "definitions": {
+    "armory.v1.kubernetes": {
+      "properties": {
+            "webhooks": {
+              "x-kubernetes-patch-merge-key": "name",
+              "x-kubernetes-patch-strategy": "merge",
+              "type": "array"
+            }
+      },
+      "type": "object",
+      "x-kubernetes-group-version-kind": [
+        {
+          "group": "armory",
+          "kind": "kubernetes",
+          "version": "v1"
+        }
+      ]
+    }
+  }
+}

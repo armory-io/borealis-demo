@@ -24,8 +24,8 @@ BASEDIR=$(dirname $0)
 echo "running command with sudo, enter your password"
 sudo mv ./kubectl-argo-rollouts-${OS}-amd64 /usr/local/bin/kubectl-argo-rollouts
 
-echo "Initialising Argo Dashboard. https://localhost:3001"
-kubectl argo rollouts dashboard -n borealis-argo &
+echo "remember to intialize Argo Dashboard on https://localhost:3001 by running: kubectl argo rollouts dashboard -n borealis-argo"
+#kubectl argo rollouts dashboard -n borealis-argo &
 
 echo "Initialising Command micro service"
 kubectl apply -f "$BASEDIR/../thirdParty/cmdhook.yml" -n borealis-demo-agent-prod
