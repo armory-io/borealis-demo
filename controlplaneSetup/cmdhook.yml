@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cmd-hook
+  namespace: armory-rna
+  labels:
+    app: cmd-hook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cmd-hook
+  template:
+    metadata:
+      namespace: armory-rna
+      labels:
+        app: cmd-hook
+      annotations:
+        app: cmd-hook
+    spec:
+      serviceAccountName: remote-network-agent-service-account
+      containers:
+        - image:  demoimages/cmd-hook:v0.3
+          imagePullPolicy: Always
+          name: cmd-hook
+          resources:
+            limits:
+              cpu: "100m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+              memory: "70Mi"
+            requests:
+              cpu: "10m" # this is to ensure the above busy wait cannot DOS a low CPU cluster.
+              memory: "70Mi"
+          ports:
+            - containerPort: 8080
+              name: cmd-hook
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: controlplane-client-credentials
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cmd-hook
+  name: cmd-hook
+  namespace: armory-rna
+spec:
+  ports:
+    - port: 8081
+      name: cmd-hook
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: cmd-hook
+  type: ClusterIP
