@@ -111,9 +111,13 @@ strategies: #This section defines the strategies environments can use to deploy.
             services:
               - potato-facts-internal
               - potato-lies-internal
+              - potato-facts-external
+              - potato-lies-external
             ttl:
               duration: 30
               unit: MINUTES
+        - pause:
+            untilApproved: true
       shutDownOldVersionAfter:
         - pause:
             untilApproved: true
@@ -130,6 +134,13 @@ strategies: #This section defines the strategies environments can use to deploy.
   mycanary:
     canary:
       steps:
+        - exposeServices:
+            services:
+              - potato-facts-external
+              - potato-lies-external
+            ttl:
+              duration: 30
+              unit: MINUTES
         - setWeight:
             weight: 25
         - analysis:
