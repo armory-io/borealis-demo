@@ -3,8 +3,9 @@ export AWS_REGION=us-east-1 # This is used to help encode your environment varia
 export AWS_SSH_KEY_NAME=default
 export AWS_CONTROL_PLANE_MACHINE_TYPE=t3a.micro
 export AWS_NODE_MACHINE_TYPE=t3a.medium
-clusterctl generate cluster $1 --kubernetes-version v1.25.0 --control-plane-machine-count=1 --worker-machine-count=3 --infrastructure=aws:v2.0.2 --flavor eks > manifests/eks.yml
-
+export VPC_ADDON_VERSION=v1.12.2-eksbuild.1
+clusterctl generate cluster $1 --kubernetes-version v1.25.0 --control-plane-machine-count=1 --worker-machine-count=6 --infrastructure=aws:v2.0.2 --flavor eks > manifests/eks.yml
+# old flavor was eks # eks-managedmachinepool-vpccni
 
 #todo: easiest way to add this label? 
 #  labels:
@@ -42,6 +43,9 @@ kubectl create configmap rna-config --from-file=tempManifests/rna-config.yml -o 
 yq -i ".targets.createCluster.namespace = \"$1\"" deployCluster.yml
 yq -i ".targets.connectClusterToCdaaS.namespace = \"$1\"" deployCluster.yml
 yq -i ".metadata.labels.type=\"cdaasDemo\"" manifests/eks.yml
+yq -i '(select(.kind=="AWSManagedControlPlane")|.spec.addons[0])={"name":"vpc-cni","version":"v1.12.2-eksbuild.1","conflictResolution":"overwrite"}' manifests/eks.yml
+yq -i '(select(.kind=="AWSManagedControlPlane")|.spec.vpcCni.env[0])={"name":"ENABLE_PREFIX_DELEGATION","value":"true"}' manifests/eks.yml
+yq -i '(select(.kind=="EKSConfigTemplate")|.spec.template.serviceIPV6Cidr)="fd54:f67c:892b:56fe::/64"' manifests/eks.yml
 
 kubectl create ns $1 -o yaml --dry-run=client >manifests/cluster-ns.yml
 armory deploy start -f deployCluster.yml --add-context cluster=$1

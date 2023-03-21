@@ -13,6 +13,7 @@ export EKS=true # enable the 'EKS' feature gate...
 export ClusterResourceSet=true
 export EXP_CLUSTER_RESOURCE_SET=true
 export CLUSTER_RESOURCE_SET=true
+export EXP_MACHINE_POOL=true
 clusterctl init
 brew install clusterawsadm
 export AWS_REGION=us-east-2 # This is used to help encode your environment variables

@@ -4,7 +4,7 @@ application: deploy-demo-cluster
 targets: #This section defines the targets to which you are deploying, and their constraints.
   createCluster:
     account: control-plane-rna
-    namespace: satwell-mar-20
+    namespace: satwell-mar-21-4
     strategy: rolling
     constraints:
       afterDeployment:
@@ -12,7 +12,7 @@ targets: #This section defines the targets to which you are deploying, and their
             name: WaitForCluster
   connectClusterToCdaaS:
     account: control-plane-rna
-    namespace: satwell-mar-20
+    namespace: satwell-mar-21-4
     strategy: rolling
     constraints:
       dependsOn:
@@ -25,9 +25,8 @@ targets: #This section defines the targets to which you are deploying, and their
         - runWebhook:
             name: WaitForClusterResources
 manifests: #This section defines the Manifests you are deploying, by default they reach all targets, but you can specify certain targets if needed.
-  - path: manifests/eks.yml
-    targets: ["createCluster"]
   - path: manifests/cluster-ns.yml
+  - path: manifests/eks.yml
     targets: ["createCluster"]
   - path: manifests/ns.yml
     targets: ["connectClusterToCdaaS"]
