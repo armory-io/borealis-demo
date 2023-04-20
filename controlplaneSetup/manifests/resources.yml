@@ -1,0 +1,24 @@
+---
+apiVersion: addons.cluster.x-k8s.io/v1alpha3
+kind: ClusterResourceSet
+metadata:
+ name: cdaas-demo-resource-set
+ namespace: default
+spec:
+ #mode: "Reconcile"
+ clusterSelector:
+   matchLabels:
+     type: cdaasDemo
+ resources:
+   - name: namespace
+     kind: ConfigMap
+   - name: rna
+     kind: ConfigMap
+   - name: rna-config
+     kind: ConfigMap
+   - name: aws-auth
+     kind: ConfigMap
+   - name: deployable-control-plane-secret
+     kind: Secret
+   #- name: calico-addon
+   #  kind: ConfigMap

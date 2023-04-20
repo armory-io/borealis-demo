@@ -1,0 +1,63 @@
+version: v1
+kind: kubernetes
+application: deploy-demo-cluster
+targets: #This section defines the targets to which you are deploying, and their constraints.
+  createCluster:
+    account: control-plane-rna
+    namespace: pmm-anna
+    strategy: rolling
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: WaitForCluster
+  connectClusterToCdaaS:
+    account: control-plane-rna
+    namespace: pmm-anna
+    strategy: rolling
+    constraints:
+      dependsOn:
+        - createCluster
+      afterDeployment:
+        - runWebhook:
+            name: WaitForClusterResources
+manifests: #This section defines the Manifests you are deploying, by default they reach all targets, but you can specify certain targets if needed.
+  - path: manifests/cluster-ns.yml
+  - path: manifests/eks.yml
+    targets: ["createCluster"]
+  - path: manifests/ns.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/resources.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/rna.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/rna-config.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/secret.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/aws-auth.yml
+    targets: ["connectClusterToCdaaS"]
+strategies:
+  rolling:
+    canary:
+      steps:
+        - setWeight:
+            weight: 100
+webhooks:
+  - name: WaitForCluster
+    method: POST
+    uriTemplate: http://cmd-hook.armory-rna:8081/cmd
+    networkMode: remoteNetworkAgent
+    agentIdentifier: control-plane-rna
+    retryCount: 3
+    bodyTemplate:
+      inline: >-
+        { "cmd": "kubectl", "arg": "wait -n={{context.cluster}} cluster/{{context.cluster}} --for=condition=Ready --timeout=30m", "callbackURL": "{{armory.callbackUri}}/callback" }
+  - name: WaitForClusterResources
+    method: POST
+    uriTemplate: http://cmd-hook.armory-rna:8081/cmd
+    networkMode: remoteNetworkAgent
+    agentIdentifier: control-plane-rna
+    retryCount: 3
+    bodyTemplate:
+      inline: >-
+        { "cmd": "kubectl", "arg": "wait -n={{context.cluster}} ClusterResourceSet/cdaas-demo-resource-set --for=condition=ResourcesApplied --timeout=30m", "callbackURL": "{{armory.callbackUri}}/callback" }

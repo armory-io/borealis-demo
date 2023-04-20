@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  rna-config.yml: |
+    apiVersion: v1
+    data:
+      APPLICATION_ENVIRONMENT: prod
+      APPLICATION_NAME: rna
+      APPLICATION_VERSION: v3.0.17
+      DISABLE_COLORS: "false"
+      LOGGER_LEVEL: info
+      LOGGER_TYPE: console
+      agent_identifier: pmm-anna
+      agent_kubernetesClusterModeEnabled: "true"
+      oidc_clientId: encrypted:k8s!n:controlplane-client-credentials!k:client-id
+      oidc_clientSecret: encrypted:k8s!n:controlplane-client-credentials!k:client-secret
+    kind: ConfigMap
+    metadata:
+      creationTimestamp: null
+      name: rna-config
+      namespace: armory-rna
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: rna-config

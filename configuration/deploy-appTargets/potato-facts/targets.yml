@@ -96,8 +96,8 @@ targets:  # The list of manifests sources
 trafficManagement:
   - targets: [prod-east]
     smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external
   - targets: [prod-eu]
     kubernetes:
       - activeService: potato-facts-external

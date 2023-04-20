@@ -40,9 +40,10 @@ helm upgrade --install prometheus prometheus-community/prometheus -n=borealis-de
 
 # Install or Upgrade armory rna chart
 helm upgrade --install armory-rna-prod armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-west-cluster     -n borealis-demo-agent-prod
-#helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-prod> manifests/rna-dev.yml
-#helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-prod> manifests/rna-staging.yml
-#helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod> manifests/rna-eu.yml
+helm template demo-dev-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-dev> manifests/rna-dev.yml
+helm template demo-staging-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-staging> manifests/rna-staging.yml
+helm template demo-prod-eu-cluster armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod-eu> manifests/rna-eu.yml
+helm template armory-rna-prod armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-west-cluster   -n borealis-demo-agent-prod> manifests/rna-prod.yml
 helm upgrade --install demo-dev-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-dev-cluster    -n borealis-demo-agent-dev
 helm upgrade --install demo-staging-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-staging-cluster    -n borealis-demo-agent-staging
 helm upgrade --install demo-prod-eu-cluster-helm armory/remote-network-agent     --set clientId='encrypted:k8s!n:rna-client-credentials!k:client-id'     --set clientSecret='encrypted:k8s!n:rna-client-credentials!k:client-secret'     --set agentIdentifier=demo-prod-eu-cluster   -n borealis-demo-agent-prod-eu
@@ -67,7 +68,9 @@ export PATH=~/.linkerd2/bin:$PATH
 
 linkerd check --pre
 #linkerd install --crds --set proxyInit.runAsRoot=true --ignore-cluster | kubectl apply -f -
-linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
+linkerd install --set proxyInit.runAsRoot=true  > manifests/linkerd.yml
+kubectl apply -f manifests/linkerd.yml
+#linkerd install --set proxyInit.runAsRoot=true | kubectl apply -f -
 #linkerd install --set proxyInit.runAsRoot=true > manifests/linkerd.yml #installing linkerD via armory hits the length limit bug. grr.
 #curl -sL https://linkerd.github.io/linkerd-smi/install | sh
 #linkerd smi install | kubectl apply -f -

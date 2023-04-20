@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  ns.yaml: |
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+      creationTimestamp: null
+      name: armory-rna
+    spec: {}
+    status: {}
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: namespace
