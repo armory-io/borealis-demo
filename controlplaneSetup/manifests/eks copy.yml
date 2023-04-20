@@ -1,0 +1,81 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: satwell-temp-feb-23-2023
+  namespace: default
+  labels:
+    type: cdaasDemo
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: satwell-temp-feb-23-2023-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedCluster
+    name: satwell-temp-feb-23-2023
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSManagedCluster
+metadata:
+  name: satwell-temp-feb-23-2023
+  namespace: default
+spec: {}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: AWSManagedControlPlane
+metadata:
+  name: satwell-temp-feb-23-2023-control-plane
+  namespace: default
+spec:
+  region: us-east-1
+  sshKeyName: default
+  version: v1.25.0
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: satwell-temp-feb-23-2023-md-0
+  namespace: default
+spec:
+  clusterName: satwell-temp-feb-23-2023
+  replicas: 3
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+          kind: EKSConfigTemplate
+          name: satwell-temp-feb-23-2023-md-0
+      clusterName: satwell-temp-feb-23-2023
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSMachineTemplate
+        name: satwell-temp-feb-23-2023-md-0
+      version: v1.25.0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSMachineTemplate
+metadata:
+  name: satwell-temp-feb-23-2023-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+      instanceType: t3a.medium
+      sshKeyName: default
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta2
+kind: EKSConfigTemplate
+metadata:
+  name: satwell-temp-feb-23-2023-md-0
+  namespace: default
+spec:
+  template: {}

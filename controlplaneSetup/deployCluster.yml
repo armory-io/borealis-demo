@@ -4,7 +4,7 @@ application: deploy-demo-cluster
 targets: #This section defines the targets to which you are deploying, and their constraints.
   createCluster:
     account: control-plane-rna
-    namespace: satwell-mar-21-4
+    namespace: pmm-anna
     strategy: rolling
     constraints:
       afterDeployment:
@@ -12,15 +12,11 @@ targets: #This section defines the targets to which you are deploying, and their
             name: WaitForCluster
   connectClusterToCdaaS:
     account: control-plane-rna
-    namespace: satwell-mar-21-4
+    namespace: pmm-anna
     strategy: rolling
     constraints:
       dependsOn:
         - createCluster
-      beforeDeployment:
-        - pause:
-            duration: 10
-            unit: seconds
       afterDeployment:
         - runWebhook:
             name: WaitForClusterResources
@@ -37,6 +33,8 @@ manifests: #This section defines the Manifests you are deploying, by default the
   - path: manifests/rna-config.yml
     targets: ["connectClusterToCdaaS"]
   - path: manifests/secret.yml
+    targets: ["connectClusterToCdaaS"]
+  - path: manifests/aws-auth.yml
     targets: ["connectClusterToCdaaS"]
 strategies:
   rolling:

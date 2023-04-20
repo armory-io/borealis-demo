@@ -16,17 +16,18 @@ export CLUSTER_RESOURCE_SET=true
 export EXP_MACHINE_POOL=true
 clusterctl init
 brew install clusterawsadm
-export AWS_REGION=us-east-2 # This is used to help encode your environment variables
+export AWS_REGION=us-east-1 # This is used to help encode your environment variables
 export AWS_ACCESS_KEY_ID=$1
 export AWS_SECRET_ACCESS_KEY=$2
 export AWS_SESSION_TOKEN=$3
 # todo: add aws provider per https://cluster-api.sigs.k8s.io/user/quick-start.html ?
-clusterawsadm bootstrap iam create-cloudformation-stack
+clusterawsadm bootstrap iam create-cloudformation-stack --config clusterawsadmconfig.yml
 export AWS_B64ENCODED_CREDENTIALS=$(clusterawsadm bootstrap credentials encode-as-profile)
 echo "$AWS_B64ENCODED_CREDENTIALS"
-# clusterctl init --infrastructure aws
+#clusterctl init --infrastructure aws
 # note: init --infra aws doesn't offer the option to n ot add hardcoded creds.
-
+#clusterctl generate provider --infrastructure aws > clusterManifests/awsProvider.yml
+k apply -f clusterManifests/awsProvider.yml
 
 # REMINDER: m,ust manually create an ec2 keypair named 'default'
 #export AWS_REGION=us-east-2
