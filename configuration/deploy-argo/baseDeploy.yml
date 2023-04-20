@@ -23,15 +23,18 @@ targets:
           name: Refer to Argo Rollouts for status
 manifests:  # The map of strategies, a deployment target will reference one of these
   - path: manifests/potato-facts.yml
-    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east]
+    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east, prod-apac]
   - path: manifests/argo-facts.yml
     targets: ["prod-operator"]
   - path: manifests/potato-facts-external-service.yml
-    targets: ["prod-operator",prod-west, prod-eu, prod-east]
+    targets: ["prod-operator",prod-west, prod-eu, prod-east, prod-apac]
   - path: manifests/potato-facts-internal-service.yml
     targets: [dev,staging,infosec,prod-eu]
   - path: manifests/potato-lies.yml
-    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east]
+    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east, prod-apac]
+  - path: manifests/istio-files/
+    targets:
+      - prod-apac
 webhooks:
   - name: Refer to Argo Rollouts for status
     method: POST
