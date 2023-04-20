@@ -67,6 +67,13 @@ targets: # Map of your deployment target, Armory CD-as-a-Service supports deploy
         namespace: borealis-prod-eu
         # This is the key to a strategy under the strategies map
         strategy: rolling
+    prod-apac:
+      # the name of an agent configured account
+      account: demo-prod-west-cluster
+      # Optionally override the namespaces that are in the manifests
+      namespace: borealis-prod-apac
+      # This is the key to a strategy under the strategies map
+      strategy: rolling
     deployed-infra-test: # this environment tries to test that the infra is actually working...
         # the name of an agent configured account
         account: demo-prod-west-cluster
@@ -99,9 +106,9 @@ manifests:
     #- path: manifests/prometheus.yml
     #  targets: [prometheus]
     - path: ../reset/potato-facts-3.yml
-      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test]
+      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test, prod-apac]
     - path: ../reset/potato-lies-3.yml
-      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test]
+      targets: [prod-east,prod-west,infosec,staging,dev,prod-eu,deployed-infra-test, prod-apac]
     - path: ../manifests/potato-facts-external-service.yml #Temporary workaround for YODL-300. deploying service along side deployment does not work for Blue/Green.
       targets: [prod-eu,prod-east]
     #- path: manifests/linkerd.yml
@@ -144,5 +151,5 @@ analysis:  # Canary analysis queries and thresholds
 trafficManagement:
   - targets: [deployed-infra-test] # ensure linkerD is working...
     smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external

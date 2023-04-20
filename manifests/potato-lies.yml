@@ -6,6 +6,8 @@ metadata:
   annotations:
     "app": "potato-lies"
     "prometheus.io/scrape": "true"
+  labels:
+    app: "potato-lies"
 spec:
   revisionHistoryLimit: 1
   replicas: 4

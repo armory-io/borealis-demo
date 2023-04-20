@@ -70,6 +70,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod
     strategy: mycanary
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary
   staging:
     account: demo-staging-cluster
     constraints:
@@ -87,6 +105,7 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - prod-west
       - prod-eu
       - prod-east
+      - prod-apac
   - path: manifests/potato-facts-internal-service.yml
     targets:
       - dev
@@ -94,6 +113,9 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - infosec
       - prod-eu
   - path: manifests/potato-lies.yml
+  - path: manifests/istio-files/
+    targets:
+      - prod-apac
 strategies: #This section defines the strategies environments can use to deploy.
   myBlueGreen:
     blueGreen:
@@ -206,6 +228,19 @@ trafficManagement: #Traffic management configuration
         previewService: potato-lies-internal
     targets:
       - prod-eu
+  - istio:
+      - virtualService:
+          name: potato-facts
+        destinationRule:
+          name: potato-facts
+          activeSubsetName: v1
+      - virtualService:
+          name: potato-lies-external
+        destinationRule:
+          name: potato-lies-external
+          activeSubsetName: v1
+    targets:
+      - prod-apac
 webhooks: #Webhooks can be used to run external automation.
   - bodyTemplate:
       inline: |-
