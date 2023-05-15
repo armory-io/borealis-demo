@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: installHelm
-        uses: yokawasa/action-setup-kube-tools@v0.7.1
+        uses: yokawasa/action-setup-kube-tools@main
         with:
           helm: '3.9.2'
           kustomize: '4.5.7'  
