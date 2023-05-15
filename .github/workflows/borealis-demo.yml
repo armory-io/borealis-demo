@@ -20,7 +20,7 @@ jobs:
       - name: buildLocust
         run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
       - name: Deployment
-        uses: armory/cli-deploy-action@main
+        uses: armory/cli-deploy-action@1.14.3
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
