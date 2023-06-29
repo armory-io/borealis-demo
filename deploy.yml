@@ -16,6 +16,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - dev
     namespace: borealis-infosec
     strategy: rolling
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary-pass
   prod-east:
     account: demo-prod-west-cluster
     constraints:
@@ -33,7 +51,7 @@ targets: #This section defines the targets to which you are deploying, and their
         - infosec
         - staging
     namespace: borealis-prod-east
-    strategy: mycanary
+    strategy: mycanary-fail-auto
   prod-eu:
     account: demo-prod-eu-cluster
     constraints:
@@ -69,25 +87,7 @@ targets: #This section defines the targets to which you are deploying, and their
         - infosec
         - staging
     namespace: borealis-prod
-    strategy: mycanary
-  prod-apac:
-    account: demo-prod-west-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-apac
-    strategy: mycanary
+    strategy: mycanary-fail
   staging:
     account: demo-staging-cluster
     constraints:
@@ -112,8 +112,9 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - staging
       - infosec
       - prod-eu
+      - prod-apac
   - path: manifests/potato-lies.yml
-  - path: manifests/istio-files/
+  - path: manifests/istio-files
     targets:
       - prod-apac
 strategies: #This section defines the strategies environments can use to deploy.
@@ -153,7 +154,45 @@ strategies: #This section defines the strategies environments can use to deploy.
               - avgCPUUsage-pass
             rollBackMode: manual
             units: seconds
-  mycanary:
+  mycanary-pass:
+    canary:
+      steps:
+        - exposeServices:
+            services:
+              - potato-facts-external
+              - potato-lies-external
+            ttl:
+              duration: 30
+              unit: MINUTES
+        - setWeight:
+            weight: 25
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            numberOfJudgmentRuns: 1
+            queries:
+              - avgCPUUsage-pass
+            rollBackMode: manual
+            rollForwardMode: automatic
+            units: seconds
+        - runWebhook:
+            name: Check_Logs
+        - setWeight:
+            weight: 50
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            numberOfJudgmentRuns: 3
+            queries:
+              - avgCPUUsage-pass
+            rollBackMode: manual
+            rollForwardMode: manual
+            units: seconds
+        - runWebhook:
+            name: Check_Logs
+        - setWeight:
+            weight: 100
+  mycanary-fail:
     canary:
       steps:
         - exposeServices:
@@ -184,8 +223,45 @@ strategies: #This section defines the strategies environments can use to deploy.
             numberOfJudgmentRuns: 3
             queries:
               - avgCPUUsage-fail
+            rollBackMode: manual
+            rollForwardMode: manual
+            units: seconds
+        - runWebhook:
+            name: Check_Logs
+        - setWeight:
+            weight: 100
+  mycanary-fail-auto:
+    canary:
+      steps:
+        - exposeServices:
+            services:
+              - potato-facts-external
+              - potato-lies-external
+            ttl:
+              duration: 30
+              unit: MINUTES
+        - setWeight:
+            weight: 25
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            numberOfJudgmentRuns: 1
+            queries:
               - avgCPUUsage-pass
             rollBackMode: manual
+            rollForwardMode: automatic
+            units: seconds
+        - runWebhook:
+            name: Check_Logs
+        - setWeight:
+            weight: 50
+        - analysis:
+            interval: 10
+            lookbackMethod: GROWING
+            numberOfJudgmentRuns: 3
+            queries:
+              - avgCPUUsage-fail
+            rollBackMode: automatic
             rollForwardMode: manual
             units: seconds
         - runWebhook:
@@ -217,8 +293,8 @@ analysis: #This section defines queries against your monitoring system that can 
       upperLimit: 0.001
 trafficManagement: #Traffic management configuration
   - smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external
     targets:
       - prod-east
   - kubernetes:
@@ -229,16 +305,16 @@ trafficManagement: #Traffic management configuration
     targets:
       - prod-eu
   - istio:
-      - virtualService:
-          name: potato-facts
-        destinationRule:
-          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
-      - virtualService:
-          name: potato-lies-external
-        destinationRule:
-          name: potato-lies-external
+          name: potato-facts
+        virtualService:
+          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
+          name: potato-lies-external
+        virtualService:
+          name: potato-lies-external
     targets:
       - prod-apac
 webhooks: #Webhooks can be used to run external automation.

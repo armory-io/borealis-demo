@@ -16,6 +16,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - dev
     namespace: borealis-infosec
     strategy: rolling
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary
   prod-east:
     account: demo-prod-west-cluster
     constraints:
@@ -86,25 +104,6 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod
     strategy: mycanary
-  prod-apac:
-    account: demo-prod-west-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-apac
-    strategy: mycanary
-
   staging:
     account: demo-staging-cluster
     constraints:
@@ -254,8 +253,8 @@ analysis: #This section defines queries against your monitoring system that can 
       upperLimit: 0.001
 trafficManagement: #Traffic management configuration
   - smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external
     targets:
       - prod-east
   - kubernetes:
@@ -266,16 +265,16 @@ trafficManagement: #Traffic management configuration
     targets:
       - prod-eu
   - istio:
-      - virtualService:
-          name: potato-facts
-        destinationRule:
-          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
-      - virtualService:
-          name: potato-lies-external
-        destinationRule:
-          name: potato-lies-external
+          name: potato-facts
+        virtualService:
+          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
+          name: potato-lies-external
+        virtualService:
+          name: potato-lies-external
     targets:
       - prod-apac
 webhooks: #Webhooks can be used to run external automation.
