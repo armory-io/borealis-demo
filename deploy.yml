@@ -1,6 +1,8 @@
 version: v1
 kind: kubernetes
 application: potato-facts
+deploymentConfig:
+  keepDeploymentObject: true
 targets: #This section defines the targets to which you are deploying, and their constraints.
   dev:
     account: demo-dev-cluster
@@ -160,7 +162,7 @@ strategies: #This section defines the strategies environments can use to deploy.
         - analysis:
             interval: 10
             lookbackMethod: GROWING
-            numberOfJudgmentRuns: 3
+            numberOfJudgmentRuns: 6
             queries:
               - avgCPUUsage-fail
               - avgCPUUsage-pass
