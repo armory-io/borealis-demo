@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
 #      - image:  armory/potato-facts:v1.6.0 #v1.5.1 #v1.6.0 # v1.7.0
-      - image:  demoimages/bluegreen:v5 #v5, v4, v3
+      - image:  index.docker.io/armory/potatofacts:v2 #demoimages/bluegreen:v5 #v5, v4, v3
         imagePullPolicy: Always
         name: potato-facts
         resources:
@@ -41,8 +41,27 @@ spec:
         env:
         - name: NEW_RELIC_AGENT_ENBALED
           value: 'false'
+        - name: APPLICATION_NAME
+          value: potatofacts
+        - name: APPLICATION_ENVIRONMENT
+          value: prod
+        - name: APPLICATION_VERSION
+          value: "v1.5.1"
         ports:
-          - containerPort: 8000
+            - name: http
+              containerPort: 9001
+            - name: metrics
+              containerPort: 3001
+        readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 9001
+              scheme: HTTP
+        livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 9001
+              scheme: HTTP
       restartPolicy: Always
 
 
@@ -64,9 +83,25 @@ spec:
 #    app: potato-facts
 #  type: ClusterIP
 
-
-
-
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: potato-facts
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: potato-facts
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
 
 
 
