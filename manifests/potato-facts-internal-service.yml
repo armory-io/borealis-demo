@@ -9,7 +9,7 @@ spec:
   - name: gate-tcp
     port: 80
     protocol: TCP
-    targetPort: 8000
+    targetPort: 9001
   selector:
     app: potato-facts
 ---
@@ -25,7 +25,7 @@ spec:
     - name: gate-tcp
       port: 80
       protocol: TCP
-      targetPort: 8000
+      targetPort: 9001
   selector:
     app: potato-lies
 
