@@ -1,26 +1,26 @@
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  labels:
+#    app: potato-facts
+#  name: potato-facts-external
+#
+#spec:
+#  externalTrafficPolicy: Cluster
+#  ports:
+#  - name: gate-tcp
+#    port: 80
+#    protocol: TCP
+#    targetPort: 9001
+#  selector:
+#    app: potato-facts
+#  type: LoadBalancer
+#
+#---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: potato-facts
-  name: potato-facts-external
-
-spec:
-  externalTrafficPolicy: Cluster
-  ports:
-  - name: gate-tcp
-    port: 80
-    protocol: TCP
-    targetPort: 8086
-  selector:
-    app: potato-facts
-  type: LoadBalancer
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: potato-facts-cluster-svc
+  name: potato-facts-external #potato-facts-cluster-svc
   labels:
     app: potato-facts-2
   annotations:
@@ -31,33 +31,33 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8000
+      targetPort: 9001
       protocol: TCP
+
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  labels:
+#    app: potato-lies
+#  name: potato-lies-external
+#
+#spec:
+#  externalTrafficPolicy: Cluster
+#  ports:
+#    - name: gate-tcp
+#      port: 80
+#      protocol: TCP
+#      targetPort: 9001
+#  selector:
+#    app: potato-lies
+#  type: LoadBalancer
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: potato-lies
-  name: potato-lies-external
-
-spec:
-  externalTrafficPolicy: Cluster
-  ports:
-    - name: gate-tcp
-      port: 80
-      protocol: TCP
-      targetPort: 8000
-  selector:
-    app: potato-lies
-  type: LoadBalancer
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: potato-lies-cluster-svc
+  name: potato-lies-external #potato-lies-cluster-svc
   labels:
     app: potato-lies-2
   annotations:
@@ -68,7 +68,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 8000
+      targetPort: 9001
       protocol: TCP
 
 
