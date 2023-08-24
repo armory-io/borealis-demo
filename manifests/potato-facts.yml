@@ -27,7 +27,7 @@ spec:
         linkerd.io/inject: enabled
     spec:
       containers:
-      - image:  index.docker.io/armory/potatofacts:v1.5.1 # v1.5.1 vs v2
+      - image:  index.docker.io/armory/potatofacts:v2 # v1.5.1 vs v2
         imagePullPolicy: Always
         name: potato-facts
         resources:
