@@ -1,5 +1,5 @@
 Demo script can be found at:
-https://armory.slab.com/posts/project-aurora-project-borealis-demo-script-4pvgrnps
+https://www.notion.so/CD-as-a-Service-Demo-Script-348cbe030894448b9eee3774c17c2521
 
 To set this demo up on your kubernetes environment:
 1) setup a cloud console environment
