@@ -29,18 +29,8 @@ jobs:
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          #app: overrideAppName
           path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
-          env:
-            ARMORY_ADDR: 'https://api.remote-dev.cloud.armory.io'
-            GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-          #applicationName: "potato-facts4sa" # yes?
-      #- name: Wait for integration tests to succeed with builtin timeout
-      #  uses: fountainhead/action-wait-for-check@v1.0.0
-      #  id: wait-for-build
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    checkName: 'Integration_Tests'
-      #    ref: ${{ github.ref }}
-      #    timeoutSeconds: 600
+        env:
+          GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
