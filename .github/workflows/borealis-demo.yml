@@ -4,7 +4,12 @@ on:
   push: # What triggers a deployment. For example, `push`.
     branches:
       - main # What branch triggers a deployment. For example, `main`.   
-
+      
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: read
+  
 jobs:
   build:
     name: deploy from main
@@ -26,6 +31,9 @@ jobs:
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
           #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          env:
+            ARMORY_ADDR: 'https://api.remote-dev.cloud.armory.io'
+            GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           #applicationName: "potato-facts4sa" # yes?
       #- name: Wait for integration tests to succeed with builtin timeout
       #  uses: fountainhead/action-wait-for-check@v1.0.0
