@@ -4,7 +4,11 @@ on:
   push: # What triggers a deployment. For example, `push`.
     branches:
       - main # What branch triggers a deployment. For example, `main`.   
-
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: read
+  
 jobs:
   build:
     name: deploy from main
@@ -28,7 +32,8 @@ jobs:
           #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           addContext: "environment2=prod,pr=test"
-          applicationName: "potato-facts4sa" # yes?
+        env:
+          GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       #- name: Wait for integration tests to succeed with builtin timeout
       #  uses: fountainhead/action-wait-for-check@v1.0.0
       #  id: wait-for-build
