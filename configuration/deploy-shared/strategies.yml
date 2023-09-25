@@ -97,5 +97,6 @@ strategies:
             units: seconds
             numberOfJudgmentRuns: 1
             rollBackMode: manual
+            rollForwardMode: automatic
             queries:
               - avgCPUUsage-pass

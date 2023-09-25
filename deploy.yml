@@ -16,6 +16,24 @@ targets: #This section defines the targets to which you are deploying, and their
         - dev
     namespace: borealis-infosec
     strategy: rolling
+  prod-apac:
+    account: demo-prod-west-cluster
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Complete
+      beforeDeployment:
+        - pause:
+            requiresRoles:
+              - Organization Admin
+            untilApproved: true
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+      dependsOn:
+        - infosec
+        - staging
+    namespace: borealis-prod-apac
+    strategy: mycanary
   prod-east:
     account: demo-prod-west-cluster
     constraints:
@@ -70,24 +88,6 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     namespace: borealis-prod
     strategy: mycanary
-  prod-apac:
-    account: demo-prod-west-cluster
-    constraints:
-      afterDeployment:
-        - runWebhook:
-            name: Send_Slack_Deployment_Complete
-      beforeDeployment:
-        - pause:
-            requiresRoles:
-              - Organization Admin
-            untilApproved: true
-        - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-      dependsOn:
-        - infosec
-        - staging
-    namespace: borealis-prod-apac
-    strategy: mycanary
   staging:
     account: demo-staging-cluster
     constraints:
@@ -112,8 +112,9 @@ manifests: #This section defines the Manifests you are deploying, by default the
       - staging
       - infosec
       - prod-eu
+      - prod-apac
   - path: manifests/potato-lies.yml
-  - path: manifests/istio-files/
+  - path: manifests/istio-files
     targets:
       - prod-apac
 strategies: #This section defines the strategies environments can use to deploy.
@@ -152,6 +153,7 @@ strategies: #This section defines the strategies environments can use to deploy.
             queries:
               - avgCPUUsage-pass
             rollBackMode: manual
+            rollForwardMode: automatic
             units: seconds
   mycanary:
     canary:
@@ -207,18 +209,18 @@ strategies: #This section defines the strategies environments can use to deploy.
 analysis: #This section defines queries against your monitoring system that can be used for automated canary analysis.
   defaultMetricProviderName: Stephen-Prometheus
   queries:
-    - lowerLimit: 0
+    - lowerLimit: -0.01
       name: avgCPUUsage-pass
       queryTemplate: avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app) sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"}) by (annotation_app, pod)) by (annotation_app) OR on() vector(0)
-      upperLimit: 10000
-    - lowerLimit: 0
+      upperLimit: 10000.1
+    - lowerLimit: -0.01
       name: avgCPUUsage-fail
       queryTemplate: "avg (avg_over_time(container_cpu_system_seconds_total{job=\"kubelet\"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)\n sum(kube_pod_annotations{job=\"kube-state-metrics\",annotation_deploy_armory_io_replica_set_name=\"{{armory.replicaSetName}}\"})\n by (annotation_app, pod)) by (annotation_app) "
       upperLimit: 0.001
 trafficManagement: #Traffic management configuration
   - smi:
-      - rootServiceName: potato-facts-cluster-svc
-      - rootServiceName: potato-lies-cluster-svc
+      - rootServiceName: potato-facts-external
+      - rootServiceName: potato-lies-external
     targets:
       - prod-east
   - kubernetes:
@@ -229,16 +231,16 @@ trafficManagement: #Traffic management configuration
     targets:
       - prod-eu
   - istio:
-      - virtualService:
-          name: potato-facts
-        destinationRule:
-          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
-      - virtualService:
-          name: potato-lies-external
-        destinationRule:
-          name: potato-lies-external
+          name: potato-facts
+        virtualService:
+          name: potato-facts
+      - destinationRule:
           activeSubsetName: v1
+          name: potato-lies-external
+        virtualService:
+          name: potato-lies-external
     targets:
       - prod-apac
 webhooks: #Webhooks can be used to run external automation.
