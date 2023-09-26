@@ -1,0 +1,47 @@
+version: v1
+kind: kubernetes
+metadata:
+  name: deploymentConfig
+application: potatolessFacts
+description: awsLambda
+context:
+  key: value
+deploymentConfig:
+  timeout:
+    unit: minutes
+    duration: 30
+targets:
+  armory-product-demos:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    strategy: allAtOnce
+    deployAsIamRole: "arn:aws:iam::957626022434:role/ArmoryRole"
+    region: us-east-2
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Integration_Tests
+      beforeDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+strategies:
+  allAtOnce:
+    canary:
+      steps:
+        - setWeight:
+            weight: 100
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+artifacts:
+- functionName: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G #WidgetsWidgetHandler1BC9DB34
+  path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+  type: zipFile
+webhooks: []
+providerOptions:
+  lambda:
+    - name: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G #WidgetsWidgetHandler1BC9DB34
+      target: armory-product-demos
+      runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
+      handler: index.handler
+      runtime: nodejs18.x
+
+

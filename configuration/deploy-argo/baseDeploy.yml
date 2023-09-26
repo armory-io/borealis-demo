@@ -16,25 +16,25 @@ targets:
       beforeDeployment:
         - pause:
             untilApproved: true
-          requiresRoles:
+            requiresRoles:
             - Organization Admin
       afterDeployment:
       - runWebhook:
           name: Refer to Argo Rollouts for status
 manifests:  # The map of strategies, a deployment target will reference one of these
   - path: manifests/potato-facts.yml
-    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east, prod-apac]
+    targets: ["infosec", "staging", "dev",prod-west (canary-pod), prod-eu (blue-green), prod-east (canary-smi), prod-apac (canary-istio)]
   - path: manifests/argo-facts.yml
     targets: ["prod-operator"]
   - path: manifests/potato-facts-external-service.yml
-    targets: ["prod-operator",prod-west, prod-eu, prod-east, prod-apac]
+    targets: ["prod-operator",prod-west (canary-pod), prod-eu (blue-green), prod-east (canary-smi),prod-apac (canary-istio)]
   - path: manifests/potato-facts-internal-service.yml
-    targets: [dev,staging,infosec,prod-eu]
+    targets: [dev,staging,infosec,prod-eu (blue-green)]
   - path: manifests/potato-lies.yml
-    targets: ["infosec", "staging", "dev",prod-west, prod-eu, prod-east, prod-apac]
+    targets: ["infosec", "staging", "dev",prod-west (canary-pod), prod-eu (blue-green), prod-east (canary-smi), prod-apac (canary-istio)]
   - path: manifests/istio-files/
     targets:
-      - prod-apac
+      - prod-apac (canary-istio)
 webhooks:
   - name: Refer to Argo Rollouts for status
     method: POST

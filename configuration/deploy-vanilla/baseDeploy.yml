@@ -7,12 +7,12 @@ manifests:  # The map of strategies, a deployment target will reference one of t
   # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
   - path: manifests/potato-facts.yml
   - path: manifests/potato-facts-external-service.yml
-    targets: [prod-west, prod-eu, prod-east,prod-apac]
+    targets: [prod-west (canary-pod), prod-eu (blue-green), prod-east (canary-smi),prod-apac (canary-istio)]
   - path: manifests/potato-facts-internal-service.yml
-    targets: [dev,staging,infosec,prod-eu,prod-apac]
+    targets: [dev,staging,infosec,prod-eu (blue-green)]
   - path: manifests/potato-lies.yml
   - path: manifests/istio-files
-    targets: [prod-apac]
+    targets: [prod-apac (canary-istio)]
 webhooks: []
 
 

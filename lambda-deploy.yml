@@ -1,0 +1,118 @@
+version: v1
+kind: lambda
+application: potatolessFacts
+targets: #This section defines the targets to which you are deploying, and their constraints.
+  armory-product-demos:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    constraints:
+      afterDeployment:
+        - runWebhook:
+            name: Integration_Tests
+      beforeDeployment:
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+    deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
+    region: us-east-2
+    strategy: allAtOnce
+artifacts: #This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed.
+  - functionName: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G
+    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+    type: zipFile
+providerOptions: #This section defines options specific to the cloud provider to which we are deploying.
+  lambda:
+    - handler: index.handler
+      name: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: armory-product-demos
+strategies: #This section defines the strategies environments can use to deploy.
+  allAtOnce:
+    canary:
+      steps:
+        - setWeight:
+            weight: 100
+        - runWebhook:
+            name: Send_Slack_Deployment_Approval_Required
+analysis: #This section defines queries against your monitoring system that can be used for automated canary analysis.
+  defaultMetricProviderName: Stephen-Prometheus
+  queries:
+    - lowerLimit: 0.0
+      name: avgCPUUsage-pass
+      queryTemplate: avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app) sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"}) by (annotation_app, pod)) by (annotation_app) OR on() vector(0)
+      upperLimit: 10000.1
+    - lowerLimit: 0.0
+      name: avgCPUUsage-fail
+      queryTemplate: "avg (avg_over_time(container_cpu_system_seconds_total{job=\"kubelet\"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)\n sum(kube_pod_annotations{job=\"kube-state-metrics\",annotation_deploy_armory_io_replica_set_name=\"{{armory.replicaSetName}}\"})\n by (annotation_app, pod)) by (annotation_app) "
+      upperLimit: 0.001
+webhooks: #Webhooks can be used to run external automation.
+  - bodyTemplate:
+      inline: |-
+        { "event_type": "webhookCallback", "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    method: POST
+    name: Check_Logs
+    retryCount: 3
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+  - bodyTemplate:
+      inline: |-
+        { "event_type": "checkLogs", "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    method: POST
+    name: Security_Scanners
+    retryCount: 3
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+  - bodyTemplate:
+      inline: |-
+        { "event_type": "checkLogs", "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    method: POST
+    name: Integration_Tests
+    retryCount: 3
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+  - bodyTemplate:
+      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is starting." }'
+    disableCallback: true
+    method: POST
+    name: Send_Slack_Deployment_Starting
+    retryCount: 3
+    uriTemplate: '{{secrets.slackwebhookURL}}'
+  - bodyTemplate:
+      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is complete." }'
+    disableCallback: true
+    method: POST
+    name: Send_Slack_Deployment_Complete
+    retryCount: 3
+    uriTemplate: '{{secrets.slackwebhookURL}}'
+  - bodyTemplate:
+      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} requires a manual approval." }'
+    disableCallback: true
+    method: POST
+    name: Send_Slack_Deployment_Approval_Required
+    retryCount: 3
+    uriTemplate: '{{secrets.slackwebhookURL}}'
+deploymentConfig:
+  keepDeploymentObject: true
+  timeout:
+    duration: 30
+    unit: minutes

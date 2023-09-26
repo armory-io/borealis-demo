@@ -1,8 +1,9 @@
-
 version: v1
 kind: kubernetes
 metadata:
   name: deploymentConfig
+deploymentConfig:
+  keepDeploymentObject: true
 strategies: 
   rolling:
     canary:
