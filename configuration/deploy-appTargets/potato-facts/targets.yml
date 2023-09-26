@@ -36,7 +36,7 @@ targets:  # The list of manifests sources
       afterDeployment:
       - runWebhook:
           name: Security_Scanners
-  prod-eu:
+  prod-eu (blue-green):
     # the name of an agent configured account
     account: demo-prod-eu-cluster
     # Optionally override the namespaces that are in the manifests
@@ -55,7 +55,7 @@ targets:  # The list of manifests sources
       afterDeployment:
       - runWebhook:
           name: Send_Slack_Deployment_Complete
-  prod-west:
+  prod-west (canary-pod):
     # the name of an agent configured account
     account: demo-prod-west-cluster
     # Optionally override the namespaces that are in the manifests
@@ -74,7 +74,7 @@ targets:  # The list of manifests sources
       afterDeployment:
       - runWebhook:
           name: Send_Slack_Deployment_Complete
-  prod-east:
+  prod-east (canary-smi):
     # the name of an agent configured account
     account: demo-prod-west-cluster
     # Optionally override the namespaces that are in the manifests
@@ -93,7 +93,7 @@ targets:  # The list of manifests sources
       afterDeployment:
       - runWebhook:
           name: Send_Slack_Deployment_Complete
-  prod-apac:
+  prod-apac (canary-istio):
     account: demo-prod-west-cluster
     constraints:
       afterDeployment:
@@ -112,11 +112,11 @@ targets:  # The list of manifests sources
     namespace: borealis-prod-apac
     strategy: mycanary
 trafficManagement:
-  - targets: [prod-east]
+  - targets: [prod-east (canary-smi)]
     smi:
       - rootServiceName: potato-facts-external
       - rootServiceName: potato-lies-external
-  - targets: [prod-eu]
+  - targets: [prod-eu (blue-green)]
     kubernetes:
       - activeService: potato-facts-external
         previewService: potato-facts-internal
@@ -134,4 +134,4 @@ trafficManagement:
           name: potato-lies-external
           activeSubsetName: v1
     targets:
-      - prod-apac
+      - prod-apac (canary-istio)

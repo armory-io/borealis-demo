@@ -1,6 +1,8 @@
 version: v1
 kind: kubernetes
-application: potato-facts2
+application: potato-facts
+deploymentConfig:
+  keepDeploymentObject: true
 # Map of Deployment Targets, this is set up in a way where 
 # we can do multi-target deployments (multi-region or multi-cluster)
 targets:

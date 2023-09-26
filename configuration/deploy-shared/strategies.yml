@@ -1,8 +1,9 @@
-
 version: v1
 kind: kubernetes
 metadata:
   name: deploymentConfig
+deploymentConfig:
+  keepDeploymentObject: true
 strategies: 
   rolling:
     canary:
@@ -97,5 +98,6 @@ strategies:
             units: seconds
             numberOfJudgmentRuns: 1
             rollBackMode: manual
+            rollForwardMode: automatic
             queries:
               - avgCPUUsage-pass
