@@ -15,13 +15,21 @@ targets: #This section defines the targets to which you are deploying, and their
     region: us-east-2
     strategy: allAtOnce
 artifacts: #This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed.
-  - functionName: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G
+  - functionName: potatolessFacts-satwell
+    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+    type: zipFile
+  - functionName: potatolessLies-satwell
     path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
     type: zipFile
 providerOptions: #This section defines options specific to the cloud provider to which we are deploying.
   lambda:
     - handler: index.handler
-      name: CdkSandboxStack-WidgetsWidgetHandler1BC9DB34-Ir3DzIVJh74G
+      name: potatolessFacts-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: armory-product-demos
+    - handler: index.handler
+      name: potatolessLies-satwell
       runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
       runtime: nodejs18.x
       target: armory-product-demos

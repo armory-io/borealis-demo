@@ -3,6 +3,8 @@ build()
 {
   SOURCE=$1
   DESTINATION=$2
+  TYPE=$3
+  SUFFIX=$4
   echo "kustomize build $SOURCE > ../$DESTINATION"
   kustomize build $SOURCE > ../$DESTINATION
   echo "yq eval 'del(.apiVersion)' ../$DESTINATION -i"
@@ -19,9 +21,11 @@ build()
   yq eval '(.trafficManagement | key) line_comment="#Traffic management configuration"' ../$DESTINATION -i
   yq eval '(.webhooks | key) line_comment="#Webhooks can be used to run external automation."' ../$DESTINATION -i
   yq eval '.analysis.queries[].lowerLimit=0.0' ../$DESTINATION -i
-  if [ $3 == "lambda" ]
+  if [ $TYPE == "lambda" ]
   then
     yq eval 'del(.manifests)' ../$DESTINATION -i
+    yq eval "(.artifacts[]) .functionName += \"$SUFFIX\"" ../$DESTINATION -i
+    yq eval "(.providerOptions.lambda[]) .name += \"$SUFFIX\"" ../$DESTINATION -i
     yq eval '.kind="lambda"' ../$DESTINATION -i
     yq eval '(.artifacts | key) line_comment="#This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed."' ../$DESTINATION -i
     #temporary, remove features we do not yet support.
@@ -31,7 +35,7 @@ build()
     yq eval 'del(.trafficManagement)' ../$DESTINATION -i
     #end temporary
   fi
-  if [ $3 == "k8s" ]
+  if [ $TYPE == "k8s" ]
   then
     yq eval '(.manifests | key) line_comment="#This section defines the Manifests you are deploying, by default they reach all targets, but you can specify certain targets if needed."' ../$DESTINATION -i
     yq eval 'del(.artifacts)' ../$DESTINATION -i
@@ -39,7 +43,7 @@ build()
   fi
 }
 
-brew install yq
-build deploy-vanilla deploy.yml k8s
-build deploy-lambda lambda-deploy.yml lambda
-build deploy-argo deploy-w-argo.yml k8s
+brew install yq 
+build deploy-vanilla deploy.yml k8s $1
+build deploy-lambda lambda-deploy.yml lambda $1
+build deploy-argo deploy-w-argo.yml k8s $1

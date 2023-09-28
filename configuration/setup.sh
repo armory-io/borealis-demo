@@ -17,6 +17,7 @@ mkdir manifests
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$2 --from-literal=client-id=$1
 export clientid=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-id"}}' | base64 -d`
 export secret=`kubectl -n=borealis-demo-agent-prod get secret rna-client-credentials -o=go-template='{{index .data "client-secret"}}' | base64 -d`
+export suffix=${1:-${clientid:-unknown}}
 echo $clientid
 kubectl -n=borealis-demo-agent-prod create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid --dry-run=client -o=yaml > manifests/agent-secret.yml
 kubectl -n=borealis-demo-agent-staging create secret generic rna-client-credentials --type=string --from-literal=client-secret=$secret --from-literal=client-id=$clientid
@@ -88,7 +89,7 @@ read -p "Go configure the Prometheus Integration in the CDaaS UI and then press 
 
 
 
-./build-deploy-kustommizations.sh
+./build-deploy-kustommizations.sh $suffix
 
 armory deploy start -f deploy-infra.yml -c $1 -s $2
 
