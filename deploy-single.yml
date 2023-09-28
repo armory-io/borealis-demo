@@ -7,9 +7,9 @@ targets:
   # This in the name of a deployment, underneath it are its configuration
   dev-west:
     # the name of an agent configured account
-    account: saClusterViaHelm #sa-eks-direct #stephen-wormhole #saClusterViaHelm
+    account:     demo-dev-cluster
     # Optionally override the namespaces that are in the manifests
-    namespace: borealis
+    namespace: borealis-dev
     # This is the key to a strategy under the strategies map
     strategy: strategy1
     # This is a list of manifest names that should be included in this deployment
