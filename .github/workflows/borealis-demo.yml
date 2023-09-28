@@ -21,17 +21,17 @@ jobs:
           kustomize: '4.5.7'  
       - name: Checkout code
         uses: actions/checkout@v2 
-      - name: buildLocust
-        run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
+      #- name: buildLocust
+      #  run: kustomize build --enable-helm thirdParty/locust > thirdParty/locust/generatedManifest.yml
       - name: Deployment
         uses: armory/cli-deploy-action@main
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          path-to-file: "/deploy-automated-2-env.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
-          addContext: "environment2=prod,pr=test"
+          #addContext: "environment2=prod,pr=test"
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       #- name: Wait for integration tests to succeed with builtin timeout
