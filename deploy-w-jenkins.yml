@@ -1,0 +1,228 @@
+version: v1
+kind: kubernetes
+application: potato-facts2
+# Map of Deployment Targets, this is set up in a way where 
+# we can do multi-target deployments (multi-region or multi-cluster)
+
+##  New feature July 11, 2022
+#deploymentConfig:
+#  timeout:
+#    unit: minutes
+#    duration: 1
+
+targets:  # The list of manifests sources
+  # This in the name of a deployment, underneath it are its configuration
+  dev:
+    # the name of an agent configured account
+    account: demo-dev-cluster #sa-eks-direct #saClusterViaHelm
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-dev
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+  staging:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-staging
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    # This is a list of manifest names that should be included in this deployment
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+      - runWebhook:
+          name: Integration_Tests
+  infosec:
+    # the name of an agent configured account
+    account: demo-staging-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-infosec
+    # This is the key to a strategy under the strategies map
+    strategy: rolling
+    constraints:
+      dependsOn: ["dev"]
+      afterDeployment:
+      - runWebhook:
+          name: Security_Scanners
+  prod-eu:
+    # the name of an agent configured account
+    account: demo-prod-eu-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-eu
+    # This is the key to a strategy under the strategies map
+    strategy: myBlueGreen
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+  prod-west:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: ["infosec","staging"]
+      beforeDeployment:
+      - pause:
+          untilApproved: true
+  prod-east:
+    # the name of an agent configured account
+    account: demo-prod-west-cluster
+    # Optionally override the namespaces that are in the manifests
+    namespace: borealis-prod-east
+    # This is the key to a strategy under the strategies map
+    strategy: mycanary
+    constraints:
+      dependsOn: [ "infosec","staging" ]
+      beforeDeployment:
+        - pause:
+            untilApproved: true
+
+manifests:  # The map of strategies, a deployment target will reference one of these
+  # This will read all yaml|yml files in a dir and deploy all manifests in that directory to all targets.
+  - path: manifests/potato-facts.yml
+  - path: manifests/potato-facts-external-service.yml
+    targets: [prod-west, prod-eu, prod-east]
+  - path: manifests/potato-lies.yml
+
+strategies:  # Stragies names and definition
+  # this is the name for the strategy
+  mycanary:
+    # This map key, is the deployment strategy type
+    canary: 
+        # List of canary steps
+        steps:
+          # The map key is the step type
+          - setWeight:
+              weight: 25
+          - analysis:
+              interval: 8
+              units: seconds
+              numberOfJudgmentRuns: 1
+              rollBackMode: manual
+              rollForwardMode: automatic
+              queries:
+              - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
+          #- pause:
+          #    untilApproved: true
+          - setWeight:
+              weight: 50
+          - analysis:
+              interval: 8
+              units: seconds
+              numberOfJudgmentRuns: 3
+              rollBackMode: manual
+              rollForwardMode: manual
+              queries: 
+              - avgCPUUsage-fail
+              - avgCPUUsage-pass
+          - runWebhook:
+              name: Check_Logs
+          - setWeight:
+              weight: 100
+  rolling:
+    canary:
+      steps: 
+      - setWeight:
+          weight: 100
+  myBlueGreen:
+    blueGreen:
+
+# activeService: potato-facts-external
+      redirectTrafficAfter:
+        - analysis:
+            interval: 7
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            rollForwardMode: automatic
+            queries:
+              - avgCPUUsage-pass
+      shutDownOldVersionAfter:
+        - pause:
+            untilApproved: true
+        - runWebhook:
+            name: Check_Logs
+        - analysis:
+            interval: 7
+            units: seconds
+            numberOfJudgmentRuns: 1
+            rollBackMode: manual
+            queries:
+              - avgCPUUsage-pass
+
+analysis:  # Canary analysis queries and thresholds
+  defaultMetricProviderName: Stephen-Prometheus
+  queries:
+    - name: avgCPUUsage-pass
+      upperLimit: 10000 #3
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)
+        sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"})
+        by (annotation_app, pod)) by (annotation_app) OR on() vector(0)
+    - name: avgCPUUsage-fail
+      upperLimit: 0.001
+      lowerLimit: 0
+      queryTemplate: >-
+        avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) )
+
+trafficManagement:
+  - targets: [prod-east]
+    smi:
+      - rootServiceName: potato-facts-cluster-svc
+      - rootServiceName: potato-lies-cluster-svc
+  - targets: [prod-eu]
+    kubernetes:
+      - activeService: potato-facts-external
+      - activeService: potato-lies-external
+
+webhooks: #Note: All webhooks in this demo simply cann the github action workflow for the 'webhookCallback' event on a github repo. They have different names for demo purposes.
+  - name: Check_Logs
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "webhookCallback",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Security_Scanners
+    method: POST
+    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
+    headers:
+      - key: Authorization
+        value: token {{secrets.github_token}}
+      - key: Content-Type
+        value: application/json
+    bodyTemplate:
+      inline:  >-
+        {
+        "event_type": "checkLogs",
+        "client_payload": {
+            "callbackUri": "{{armory.callbackUri}}/callback"
+            }
+        }
+    retryCount: 3
+  - name: Integration_Tests
+    method: POST
+    uriTemplate: http://jenkins.jenkins:8080/job/WebhookCallback/buildWithParameters?url={{armory.callbackUri}}/callback
+    retryCount: 3
+    agentIdentifier: demo-staging-cluster
+    networkMode: remoteNetworkAgent
+    headers:
+      - key: Authorization
+        value: Basic {{secrets.jenkins_token}}

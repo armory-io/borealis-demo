@@ -1,0 +1,20 @@
+# -- stackhawk configuration for Potato-facts --
+app:
+  # -- An applicationId obtained from the StackHawk platform. --
+  applicationId: d145bb5c-bd32-4b4e-8504-b5b5ba9534c5 # (required)
+  # -- The environment for the applicationId defined in the StackHawk platform. --
+  env: Pre-Production # (required)
+  # -- The url of your application to scan --
+  host: http://a7f9c69f7909a4a9f92acf9e8a21b072-1216878534.us-east-2.elb.amazonaws.com # (required)
+
+
+# -- Customized Configuration for GraphQL/SOAP/OpenAPI, add here --
+  # Configuration Docs: https://docs.stackhawk.com/hawkscan/configuration/
+
+# -- If Authenticated Scanning is needed, add here --
+  # Authenticated Scanning Docs: https://docs.stackhawk.com/hawkscan/authenticated-scanning.html
+  # Authenticated Scanning Repo: https://github.com/kaakaww/scan-configuration/tree/main/Authentication
+
+# -- Help Section --
+  # Docs: https://docs.stackhawk.com/
+  # Contact Support: support@stackhawk.com

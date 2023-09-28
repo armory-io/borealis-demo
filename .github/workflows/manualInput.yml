@@ -1,0 +1,24 @@
+name: Mixed inputs
+
+on:
+  workflow_dispatch:
+    inputs:
+      template:
+        type: choice
+        description: template
+        options: 
+        - Template 1 - v1
+        - Template 1 - v2
+        - Template 2 - v2
+      name:
+        required: true
+      nodeCount:
+        required: true
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send greeting
+      run: echo "${{ github.event.inputs.message }} ${{ fromJSON('["", ""]')[github.event.inputs.use-emoji == 'true'] }} ${{ github.event.inputs.name }}"

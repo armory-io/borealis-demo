@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+        - name: armory-cli
+          command: ["tail", "-f", "/dev/null"]  # this or any command that is bascially a noop is required, this is so that you don't overwrite the entrypoint of the base container
+          tty: true
+          #command:
+          #  - /bin/sh
+          #  - '-c'
+          #  - pwd; ls -la; ls -la /home/jenkins/agent/workspace/; armory deploy start -f deploy.yml -c CLIENT_ID -s SECRET
+          image: 'armory/armory-cli:latest'
+          
+          

@@ -1,12 +1,12 @@
-name: Webhook Callback
+name: stackhawk
 
 on:
   repository_dispatch:
-    types: checkLogs
+    types: stackhawk
 
 jobs:
-  respond:
-    name: Calls the callback being passed in
+  test:
+    name: stackhawk
     runs-on: ubuntu-latest
     steps:
       - name: getToken
@@ -16,7 +16,12 @@ jobs:
           url: "https://auth.cloud.armory.io/oauth/token"
           method: "POST"
           customHeaders: '{ "Content-Type": "application/x-www-form-urlencoded" }'
-          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.CDAAS_CLIENT_ID }}&client_secret=${{ secrets.CDAAS_CLIENT_SECRET }}'
+          data: 'audience=https://api.cloud.armory.io&grant_type=client_credentials&client_id=${{ secrets.CDAAS_CLIENT_ID }}&client_secret=${{ secrets.CDAAS_CLIENT_SECRET }}'        
+          
+      - uses: actions/checkout@v2
+      - uses: stackhawk/hawkscan-action@v2.0.0
+        with:
+          apiKey: ${{ secrets.HAWK_API_KEY }}
       - name: callCallback
         id: callCallback
         uses: fjogeleit/http-request-action@master
@@ -25,6 +30,6 @@ jobs:
           method: 'POST'
           bearerToken: ${{ fromJSON(steps.getToken.outputs.response).access_token }}
           customHeaders: '{ "Content-Type": "application/json" }'
-          data: '{ "success": true, "mdMessage": "Webhook successful: no errors found in logs service: ${{ github.event.client_payload.service }}" }'
+          data: '{ "success": true, "mdMessage": "Webhook was successful: ${{ github.event.client_payload.callbackUri }}" }'
       - name: show http response
         run: echo ${{ steps.callCallback.outputs.response }}
