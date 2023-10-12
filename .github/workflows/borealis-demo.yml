@@ -31,7 +31,7 @@ jobs:
           path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-locust.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/deploy-webhook.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
-          #addContext: "environment2=prod,pr=test"
+          addContext: "dbSchema=v1.3.27"
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       #- name: Wait for integration tests to succeed with builtin timeout
