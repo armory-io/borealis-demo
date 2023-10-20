@@ -8,3 +8,5 @@ To set this demo up on your kubernetes environment:
 4) cd into `./configuration` and run `./setup.sh <clientID> <clientSecret>` where clientID and clientSecret are the credentials from step 2.
 
 _The current `setup.sh` script has some local pathing issues and will fail if run outside of the `./configuration` directory._
+
+#slight change 
