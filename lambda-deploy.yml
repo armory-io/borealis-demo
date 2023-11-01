@@ -2,7 +2,23 @@ version: v1
 kind: lambda
 application: potatolessFacts
 targets: #This section defines the targets to which you are deploying, and their constraints.
-  armory-product-demos:
+  Production-1:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    constraints:
+      dependsOn:
+        - staging
+    deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
+    region: us-east-2
+    strategy: allAtOnce
+  Production-2:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    constraints:
+      dependsOn:
+        - staging
+    deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
+    region: us-west-1
+    strategy: allAtOnce
+  staging:
     account: arn:aws:iam::957626022434:role/ArmoryRole
     constraints:
       afterDeployment:
@@ -12,14 +28,26 @@ targets: #This section defines the targets to which you are deploying, and their
         - runWebhook:
             name: Send_Slack_Deployment_Approval_Required
     deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
-    region: us-east-2
+    region: us-east-1
     strategy: allAtOnce
 artifacts: #This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed.
   - functionName: potatolessFacts-satwell
-    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+    path: s3://armory-product-demos-potatoless-facts-us-east-2/potatolessfacts-justsweetpotatoes.zip
     type: zipFile
   - functionName: potatolessLies-satwell
-    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+    path: s3://armory-product-demos-potatoless-facts-us-east-2/potatolessfacts-justsweetpotatoes.zip
+    type: zipFile
+  - functionName: potatolessFacts-staging-satwell
+    path: s3://armory-product-demos-potatoless-facts-us-east-1/potatolessfacts-justsweetpotatoes.zip
+    type: zipFile
+  - functionName: potatolessLies-staging-satwell
+    path: s3://armory-product-demos-potatoless-facts-us-east-1/potatolessfacts-justsweetpotatoes.zip
+    type: zipFile
+  - functionName: potatolessFacts-prod2-satwell
+    path: s3://armory-product-demos-potatoless-facts-us-west-1/potatolessfacts-justsweetpotatoes.zip
+    type: zipFile
+  - functionName: potatolessLies-prod2-satwell
+    path: s3://armory-product-demos-potatoless-facts-us-west-1/potatolessfacts-justsweetpotatoes.zip
     type: zipFile
 providerOptions: #This section defines options specific to the cloud provider to which we are deploying.
   lambda:
@@ -27,12 +55,32 @@ providerOptions: #This section defines options specific to the cloud provider to
       name: potatolessFacts-satwell
       runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
       runtime: nodejs18.x
-      target: armory-product-demos
+      target: Production-1
     - handler: index.handler
       name: potatolessLies-satwell
       runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
       runtime: nodejs18.x
-      target: armory-product-demos
+      target: Production-1
+    - handler: index.handler
+      name: potatolessFacts-prod2-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: Production-2
+    - handler: index.handler
+      name: potatolessLies-prod2-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: Production-2
+    - handler: index.handler
+      name: potatolessFacts-staging-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: staging
+    - handler: index.handler
+      name: potatolessLies-staging-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: staging
 strategies: #This section defines the strategies environments can use to deploy.
   allAtOnce:
     canary:

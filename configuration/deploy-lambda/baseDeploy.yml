@@ -11,11 +11,11 @@ deploymentConfig:
     unit: minutes
     duration: 30
 targets:
-  armory-product-demos:
+  staging:
     account: arn:aws:iam::957626022434:role/ArmoryRole
     strategy: allAtOnce
     deployAsIamRole: "arn:aws:iam::957626022434:role/ArmoryRole"
-    region: us-east-2
+    region: us-east-1
     constraints:
       afterDeployment:
         - runWebhook:
@@ -23,6 +23,22 @@ targets:
       beforeDeployment:
         - runWebhook:
             name: Send_Slack_Deployment_Approval_Required
+  Production-1:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    strategy: allAtOnce
+    deployAsIamRole: "arn:aws:iam::957626022434:role/ArmoryRole"
+    region: us-east-2
+    constraints:
+      dependsOn:
+      - staging
+  Production-2:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    strategy: allAtOnce
+    deployAsIamRole: "arn:aws:iam::957626022434:role/ArmoryRole"
+    region: us-west-1
+    constraints:
+      dependsOn:
+      - staging
 strategies:
   allAtOnce:
     canary:
@@ -32,22 +48,54 @@ strategies:
         - runWebhook:
             name: Send_Slack_Deployment_Approval_Required
 artifacts:
-- functionName: potatolessFacts- #WidgetsWidgetHandler1BC9DB34
-  path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+- functionName: potatolessFacts- 
+  path: s3://armory-product-demos-potatoless-facts-us-east-2/71dec8493297ae732c123fb4aea7dae0.zip
   type: zipFile
-- functionName: potatolessLies- #WidgetsWidgetHandler1BC9DB34
-  path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/71dec8493297ae732c123fb4aea7dae0
+- functionName: potatolessLies- 
+  path: s3://armory-product-demos-potatoless-facts-us-east-2/71dec8493297ae732c123fb4aea7dae0.zip
+  type: zipFile
+- functionName: potatolessFacts-staging- 
+  path: s3://armory-product-demos-potatoless-facts-us-east-1/71dec8493297ae732c123fb4aea7dae0.zip
+  type: zipFile
+- functionName: potatolessLies-staging- 
+  path: s3://armory-product-demos-potatoless-facts-us-east-1/71dec8493297ae732c123fb4aea7dae0.zip
+  type: zipFile
+- functionName: potatolessFacts-prod2- 
+  path: s3://armory-product-demos-potatoless-facts-us-west-1/71dec8493297ae732c123fb4aea7dae0.zip
+  type: zipFile
+- functionName: potatolessLies-prod2- 
+  path: s3://armory-product-demos-potatoless-facts-us-west-1/71dec8493297ae732c123fb4aea7dae0.zip
   type: zipFile
 webhooks: []
 providerOptions:
   lambda:
-    - name: potatolessFacts- #WidgetsWidgetHandler1BC9DB34
-      target: armory-product-demos
+    - name: potatolessFacts- 
+      target: Production-1
       runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
       handler: index.handler
       runtime: nodejs18.x
-    - name: potatolessLies- #WidgetsWidgetHandler1BC9DB34
-      target: armory-product-demos
+    - name: potatolessLies- 
+      target: Production-1
+      runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
+      handler: index.handler
+      runtime: nodejs18.x
+    - name: potatolessFacts-prod2- 
+      target: Production-2
+      runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
+      handler: index.handler
+      runtime: nodejs18.x
+    - name: potatolessLies-prod2- 
+      target: Production-2
+      runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
+      handler: index.handler
+      runtime: nodejs18.x
+    - name: potatolessFacts-staging- 
+      target: staging
+      runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
+      handler: index.handler
+      runtime: nodejs18.x
+    - name: potatolessLies-staging- 
+      target: staging
       runAsIamRole: "arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q"
       handler: index.handler
       runtime: nodejs18.x
