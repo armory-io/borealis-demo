@@ -10,6 +10,7 @@ cd reset
 #kubectl -n=borealis-prod delete rs --all
 #kubectl -n=borealis-prod2 delete rs --all
 #sleep 60
+armory deploy start -f lambda-reset.yml -w
 armory deploy start -f deploy3.yml -w
 
 

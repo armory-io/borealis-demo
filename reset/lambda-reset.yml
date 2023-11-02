@@ -1,0 +1,39 @@
+version: v1
+kind: lambda
+application: potatolessFacts
+targets: #This section defines the targets to which you are deploying, and their constraints.
+  armory-product-demos:
+    account: arn:aws:iam::957626022434:role/ArmoryRole
+    deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
+    region: us-east-2
+    strategy: allAtOnce
+artifacts: #This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed.
+  - functionName: potatolessFacts-satwell
+    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/041b7d0740aa6ba1622ce5b3a9307829a21c1f0e5246bacc653ed458e885f5b5.zip
+    type: zipFile
+  - functionName: potatolessLies-satwell
+    path: s3://cdk-hnb659fds-assets-957626022434-us-east-2/041b7d0740aa6ba1622ce5b3a9307829a21c1f0e5246bacc653ed458e885f5b5.zip
+    type: zipFile
+providerOptions: #This section defines options specific to the cloud provider to which we are deploying.
+  lambda:
+    - handler: index.handler
+      name: potatolessFacts-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: armory-product-demos
+    - handler: index.handler
+      name: potatolessLies-satwell
+      runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
+      runtime: nodejs18.x
+      target: armory-product-demos
+strategies: #This section defines the strategies environments can use to deploy.
+  allAtOnce:
+    canary:
+      steps:
+        - setWeight:
+            weight: 100
+deploymentConfig:
+  keepDeploymentObject: true
+  timeout:
+    duration: 30
+    unit: minutes
