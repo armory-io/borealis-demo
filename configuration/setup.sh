@@ -89,7 +89,7 @@ read -p "Go configure the Prometheus Integration in the CDaaS UI and then press 
 
 
 
-./build-deploy-kustommizations.sh $suffix
+./build-deploy-kustommizations.sh $suffix 957626022434
 
 armory deploy start -f deploy-infra.yml -c $1 -s $2
 

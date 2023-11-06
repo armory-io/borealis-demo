@@ -2,7 +2,7 @@ version: v1
 kind: kubernetes
 metadata:
   name: deploymentConfig
-application: potatolessFacts
+application: potatoless Facts
 description: awsLambda
 context:
   key: value
@@ -31,6 +31,12 @@ targets:
     constraints:
       dependsOn:
       - staging
+      beforeDeployment:
+      - pause:
+          # coming soon for lambda: role-based approvals! (already available for k8s)
+          # requiresRoles:
+          #   - Organization Admin
+          untilApproved: true
   Production-2:
     account: arn:aws:iam::957626022434:role/ArmoryRole
     strategy: allAtOnce
@@ -39,6 +45,12 @@ targets:
     constraints:
       dependsOn:
       - staging
+      beforeDeployment:
+      - pause:
+          # coming soon for lambda: role-based approvals! (already available for k8s)
+          # requiresRoles:
+          #   - Organization Admin
+          untilApproved: true
 strategies:
   allAtOnce:
     canary:
@@ -49,22 +61,22 @@ strategies:
             name: Send_Slack_Deployment_Approval_Required
 artifacts:
 - functionName: potatolessFacts- 
-  path: s3://armory-product-demos-potatoless-facts-us-east-2/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-east-2/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 - functionName: potatolessLies- 
-  path: s3://armory-product-demos-potatoless-facts-us-east-2/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-east-2/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 - functionName: potatolessFacts-staging- 
-  path: s3://armory-product-demos-potatoless-facts-us-east-1/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-east-1/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 - functionName: potatolessLies-staging- 
-  path: s3://armory-product-demos-potatoless-facts-us-east-1/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-east-1/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 - functionName: potatolessFacts-prod2- 
-  path: s3://armory-product-demos-potatoless-facts-us-west-1/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-west-1/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 - functionName: potatolessLies-prod2- 
-  path: s3://armory-product-demos-potatoless-facts-us-west-1/71dec8493297ae732c123fb4aea7dae0.zip
+  path: s3://armory-product-demos-potatoless-facts-us-west-1/potatolessfacts-justsweetpotatoes.zip
   type: zipFile
 webhooks: []
 providerOptions:
