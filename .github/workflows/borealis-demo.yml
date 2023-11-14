@@ -21,9 +21,9 @@ jobs:
         with:
           clientId: "${{ secrets.CDAAS_CLIENT_ID }}"  # "61ihoLa6dkk5SRwAy232H0TJk1xTBbK6"
           clientSecret:  "${{ secrets.CDAAS_CLIENT_SECRET }}" #Client secret that you created in the Armory Cloud Console that has been encrypted with GitHub's encrypted secrets.
-          path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
+          #path-to-file: "/deploy.yml" # Path to the deployment file. For more information, see the Create a deployment file section.
           #path-to-file: "/lambda-deploy.yml"
-          #path-to-file: "/deploy-queue.yml"
+          path-to-file: "/deploy-queue.yml"
           addContext: "dbSchema=v1.3.27"
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
