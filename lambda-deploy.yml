@@ -1,6 +1,6 @@
 version: v1
 kind: lambda
-application: potatolessFacts
+application: potatoless Facts
 targets: #This section defines the targets to which you are deploying, and their constraints.
   Production-1:
     account: arn:aws:iam::957626022434:role/ArmoryRole
