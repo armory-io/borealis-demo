@@ -3,7 +3,7 @@ kind: lambda
 application: potatoless Facts
 targets: #This section defines the targets to which you are deploying, and their constraints.
   Production-1:
-    account: arn:aws:iam::957626022434:role/ArmoryRole
+    account: arn:aws:iam::957626022434:role/ArmoryRole dsadsadsadsa
     constraints:
       beforeDeployment:
         - pause:
@@ -23,7 +23,7 @@ targets: #This section defines the targets to which you are deploying, and their
         - staging
     deployAsIamRole: arn:aws:iam::957626022434:role/ArmoryRole
     region: us-west-1
-    strategy: allAtOnce
+    strategy: mycanary
   staging:
     account: arn:aws:iam::957626022434:role/ArmoryRole
     constraints:
@@ -93,19 +93,22 @@ strategies: #This section defines the strategies environments can use to deploy.
       steps:
         - setWeight:
             weight: 100
+  mycanary:
+    canary:
+      steps:
+        - setWeight:
+            weight: 20
         - runWebhook:
-            name: Send_Slack_Deployment_Approval_Required
-analysis: #This section defines queries against your monitoring system that can be used for automated canary analysis.
-  defaultMetricProviderName: Stephen-Prometheus
-  queries:
-    - lowerLimit: 0.0
-      name: avgCPUUsage-pass
-      queryTemplate: avg (avg_over_time(container_cpu_system_seconds_total{job="kubelet"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app) sum(kube_pod_annotations{job="kube-state-metrics",annotation_deploy_armory_io_replica_set_name="{{armory.replicaSetName}}"}) by (annotation_app, pod)) by (annotation_app) OR on() vector(0)
-      upperLimit: 10000.1
-    - lowerLimit: 0.0
-      name: avgCPUUsage-fail
-      queryTemplate: "avg (avg_over_time(container_cpu_system_seconds_total{job=\"kubelet\"}[{{armory.promQlStepInterval}}]) * on (pod)  group_left (annotation_app)\n sum(kube_pod_annotations{job=\"kube-state-metrics\",annotation_deploy_armory_io_replica_set_name=\"{{armory.replicaSetName}}\"})\n by (annotation_app, pod)) by (annotation_app) "
-      upperLimit: 0.001
+            name: Check_Logs
+        - setWeight:
+            weight: 100
+trafficManagement:
+- alias:
+  - function: potatolessFacts-prod2-satwell
+    aliasName: potatolessFacts
+  - function: potatolessLies-prod2-satwell
+    aliasName: potatolessLies
+  targets: [Production-2]
 webhooks: #Webhooks can be used to run external automation.
   - bodyTemplate:
       inline: |-
@@ -134,47 +137,6 @@ webhooks: #Webhooks can be used to run external automation.
       - key: Content-Type
         value: application/json
     method: POST
-    name: Security_Scanners
-    retryCount: 3
-    uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
-  - bodyTemplate:
-      inline: |-
-        { "event_type": "checkLogs", "client_payload": {
-            "callbackUri": "{{armory.callbackUri}}/callback"
-            }
-        }
-    headers:
-      - key: Authorization
-        value: token {{secrets.github_token}}
-      - key: Content-Type
-        value: application/json
-    method: POST
     name: Integration_Tests
     retryCount: 3
     uriTemplate: https://api.github.com/repos/{{secrets.github_org}}/{{secrets.github_repository}}/dispatches
-  - bodyTemplate:
-      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is starting." }'
-    disableCallback: true
-    method: POST
-    name: Send_Slack_Deployment_Starting
-    retryCount: 3
-    uriTemplate: '{{secrets.slackwebhookURL}}'
-  - bodyTemplate:
-      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} is complete." }'
-    disableCallback: true
-    method: POST
-    name: Send_Slack_Deployment_Complete
-    retryCount: 3
-    uriTemplate: '{{secrets.slackwebhookURL}}'
-  - bodyTemplate:
-      inline: '{ "status_url": "https://console.cloud.armory.io/deployments/{{armory.deploymentId}}", "message": "Deployment of {{armory.applicationName}} to {{armory.environmentName}} requires a manual approval." }'
-    disableCallback: true
-    method: POST
-    name: Send_Slack_Deployment_Approval_Required
-    retryCount: 3
-    uriTemplate: '{{secrets.slackwebhookURL}}'
-deploymentConfig:
-  keepDeploymentObject: true
-  timeout:
-    duration: 30
-    unit: minutes
