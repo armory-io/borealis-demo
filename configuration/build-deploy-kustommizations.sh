@@ -5,6 +5,7 @@ build()
   DESTINATION=$2
   TYPE=$3
   SUFFIX=$4
+  AWS_ACCOUNT=$5
   echo "kustomize build $SOURCE > ../$DESTINATION"
   kustomize build $SOURCE > ../$DESTINATION
   echo "yq eval 'del(.apiVersion)' ../$DESTINATION -i"
@@ -26,14 +27,17 @@ build()
     yq eval 'del(.manifests)' ../$DESTINATION -i
     yq eval "(.artifacts[]) .functionName += \"$SUFFIX\"" ../$DESTINATION -i
     yq eval "(.providerOptions.lambda[]) .name += \"$SUFFIX\"" ../$DESTINATION -i
+    yq eval "(.trafficManagement[].alias[]) .functionName += \"$SUFFIX\"" ../$DESTINATION -i
     yq eval '.kind="lambda"' ../$DESTINATION -i
     yq eval '(.artifacts | key) line_comment="#This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed."' ../$DESTINATION -i
     #temporary, remove features we do not yet support.
     yq eval 'del(.strategies.myBlueGreen)' ../$DESTINATION -i
     yq eval 'del(.strategies.mycanary)' ../$DESTINATION -i
     yq eval 'del(.strategies.rolling)' ../$DESTINATION -i
-    yq eval 'del(.trafficManagement)' ../$DESTINATION -i
+    #yq eval 'del(.trafficManagement)' ../$DESTINATION -i
     #end temporary
+    #flip from the default account ID to the one being configured
+    sed -i '' "s/957626022434/$AWS_ACCOUNT/" ../$DESTINATION
   fi
   if [ $TYPE == "k8s" ]
   then
@@ -44,6 +48,6 @@ build()
 }
 
 brew install yq 
-build deploy-vanilla deploy.yml k8s $1
-build deploy-lambda lambda-deploy.yml lambda $1
-build deploy-argo deploy-w-argo.yml k8s $1
+build deploy-vanilla deploy.yml k8s $1 $2
+build deploy-lambda lambda-deploy.yml lambda $1 $2
+build deploy-argo deploy-w-argo.yml k8s $1 $2
