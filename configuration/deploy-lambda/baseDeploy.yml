@@ -39,7 +39,7 @@ targets:
           untilApproved: true
   Production-2:
     account: arn:aws:iam::957626022434:role/ArmoryRole
-    strategy: allAtOnce
+    strategy: my-canary
     deployAsIamRole: "arn:aws:iam::957626022434:role/ArmoryRole"
     region: us-west-1
     constraints:
@@ -59,6 +59,26 @@ strategies:
             weight: 100
         - runWebhook:
             name: Send_Slack_Deployment_Approval_Required
+  my-canary:
+    canary:
+      steps:
+        - setWeight:
+            weight: 25
+        - runWebhook:
+            name: Check_Logs
+        - setWeight:
+            weight: 50
+        - pause:
+            untilApproved: true
+        - setWeight:
+            weight: 100
+trafficManagement:
+- alias:
+  - functionName: potatolessFacts-prod2-
+    aliasName: potatolessFacts
+  - functionName: potatolessLies-prod2-
+    aliasName: potatolessLies
+  targets: [Production-2]
 artifacts:
 - functionName: potatolessFacts- 
   path: s3://armory-product-demos-potatoless-facts-us-east-2/potatolessfacts-justsweetpotatoes.zip

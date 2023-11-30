@@ -27,13 +27,14 @@ build()
     yq eval 'del(.manifests)' ../$DESTINATION -i
     yq eval "(.artifacts[]) .functionName += \"$SUFFIX\"" ../$DESTINATION -i
     yq eval "(.providerOptions.lambda[]) .name += \"$SUFFIX\"" ../$DESTINATION -i
+    yq eval "(.trafficManagement[].alias[]) .functionName += \"$SUFFIX\"" ../$DESTINATION -i
     yq eval '.kind="lambda"' ../$DESTINATION -i
     yq eval '(.artifacts | key) line_comment="#This section defines the artifacts you are deploying, by default they reach all targets, but you can specify certain targets if needed."' ../$DESTINATION -i
     #temporary, remove features we do not yet support.
     yq eval 'del(.strategies.myBlueGreen)' ../$DESTINATION -i
     yq eval 'del(.strategies.mycanary)' ../$DESTINATION -i
     yq eval 'del(.strategies.rolling)' ../$DESTINATION -i
-    yq eval 'del(.trafficManagement)' ../$DESTINATION -i
+    #yq eval 'del(.trafficManagement)' ../$DESTINATION -i
     #end temporary
     #flip from the default account ID to the one being configured
     sed -i '' "s/957626022434/$AWS_ACCOUNT/" ../$DESTINATION

@@ -68,6 +68,13 @@ providerOptions: #This section defines options specific to the cloud provider to
       runAsIamRole: arn:aws:iam::957626022434:role/CdkSandboxStack-WidgetsWidgetHandlerServiceRole8C2-14A5P01L3VA1Q
       runtime: nodejs18.x
       target: staging
+trafficManagement:
+- alias:
+  - functionName: potatolessFacts-prod2-satwell
+    aliasName: potatolessFacts
+  - functionName: potatolessLies-prod2-satwell
+    aliasName: potatolessLies
+  targets: [Production-2]
 strategies: #This section defines the strategies environments can use to deploy.
   allAtOnce:
     canary:
